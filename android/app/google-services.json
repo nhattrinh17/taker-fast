@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "1025396330855",
+    "project_id": "nhattm-chat",
+    "storage_bucket": "nhattm-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025396330855:android:d0a58f01e787a032201fc2",
+        "android_client_info": {
+          "package_name": "com.taker.fast"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025396330855-vhm0pr8t6n3b37ia5vafu7n4ldlhi1du.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8pQK-uEMHrAK-JBDqnIkXKI6NXCW3HeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025396330855-vhm0pr8t6n3b37ia5vafu7n4ldlhi1du.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1025396330855:android:afccafc4177f82e7201fc2",
+        "android_client_info": {
+          "package_name": "nhattm.chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1025396330855-vhm0pr8t6n3b37ia5vafu7n4ldlhi1du.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB8pQK-uEMHrAK-JBDqnIkXKI6NXCW3HeY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1025396330855-vhm0pr8t6n3b37ia5vafu7n4ldlhi1du.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
