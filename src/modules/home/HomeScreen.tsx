@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -165,7 +165,7 @@ interface Props {
 }
 
 const HomeScreen = ({route}: Props) => {
-  const userID = userStore(state => state?.user?.id);
+  const {id: userID} = userStore(state => state?.user);
   let socketService = SocketService.getInstance();
   // console.log('🚀 ~ HomeScreen ~ socketService:', socketService);
   const token = userStore(state => state.token);
@@ -196,6 +196,7 @@ const HomeScreen = ({route}: Props) => {
     longitude: location?.long ?? 0,
   });
 
+  const mapRef = useRef<MapView | null>(null);
   const [region, setRegion] = useState<Region>({
     latitude: currentLocation?.latitude,
     longitude: currentLocation?.longitude,
@@ -214,7 +215,11 @@ const HomeScreen = ({route}: Props) => {
     try {
       Geolocation.getCurrentPosition(async res => {
         const {latitude, longitude} = res.coords;
-        if (latitude && longitude) {
+        if (
+          !currentLocation ||
+          currentLocation.latitude !== latitude ||
+          currentLocation.longitude !== longitude
+        ) {
           socketService.emit(SocketEvents.SHOE_MAKER_UPDATE_LOCATION, {
             lat: currentLocation?.latitude,
             lng: currentLocation?.longitude,
@@ -239,11 +244,13 @@ const HomeScreen = ({route}: Props) => {
   };
 
   const onPressCurrentLocation = () => {
-    setRegion({
-      ...region,
-      latitude: currentLocation.latitude,
-      longitude: currentLocation.longitude,
-    });
+    // setRegion({
+    //   ...region,
+    //   latitude: currentLocation.latitude,
+    //   longitude: currentLocation.longitude,
+    // });
+    // Nhattm update get current location
+    getCurrentLocation();
   };
 
   const onPressItemStatus = async (item: components.ItemDropdown) => {
@@ -621,7 +628,7 @@ const HomeScreen = ({route}: Props) => {
               buttonStyles={styles.btAction}
             />
 
-            {orderInProgress?.status == StatusUpdateOrder.MEETING && (
+            {orderInProgress?.status == StatusUpdateOrder.ACCEPTED && (
               <OpenGoogleMapsDirections
                 origin={currentLocation}
                 destination={{
@@ -646,6 +653,7 @@ const HomeScreen = ({route}: Props) => {
     <View style={styles.container}>
       <HeaderHome itemActive={status} onPress={onPressItemStatus} />
       <MapView
+        ref={mapRef}
         onLayout={onMapViewLayout}
         provider={PROVIDER_GOOGLE}
         region={region}

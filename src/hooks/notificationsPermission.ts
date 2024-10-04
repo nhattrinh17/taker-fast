@@ -23,32 +23,50 @@ export default function useFirebaseNotifications() {
     return navigate('Home', {order: newOrder});
   };
 
-  const setFCMTokenUser = async () => {
-    if (true) {
-      //always update FCM token
+  // Cập nhật FCM token lên server
+  const updateFCMToken = async (token: string) => {
+    if (token) {
       try {
-        await messaging().registerDeviceForRemoteMessages();
-        const isDeviceRegisteredForRemoteMessages =
-          messaging().isDeviceRegisteredForRemoteMessages;
-        if (isDeviceRegisteredForRemoteMessages) {
-          const permission = await messaging().hasPermission();
-          if (permission === 1) {
-            await messaging().deleteToken();
-            const token = await messaging().getToken();
-            console.log('FCM Token ==>', token);
-            if (token) {
-              try {
-                await triggerUpdateFCMToken({fcmToken: token});
-              } catch (err) {
-                //
-              }
-            }
-          }
-        }
+        await triggerUpdateFCMToken({fcmToken: token});
+        console.log('FCM Token đã cập nhật lên server:', token);
       } catch (err) {
-        console.log('Error ==>', err);
+        console.log('Lỗi cập nhật token lên server:', err);
       }
     }
+  };
+
+  const setFCMTokenUser = async () => {
+    try {
+      await messaging().registerDeviceForRemoteMessages();
+      const isDeviceRegisteredForRemoteMessages =
+        messaging().isDeviceRegisteredForRemoteMessages;
+      console.log(
+        '🚀 ~ setFCMTokenUser ~ isDeviceRegisteredForRemoteMessages:',
+        isDeviceRegisteredForRemoteMessages,
+      );
+
+      if (isDeviceRegisteredForRemoteMessages) {
+        const permission = await messaging().hasPermission();
+        if (permission === 1) {
+          // Xóa token cũ trước khi lấy token mới
+          await messaging().deleteToken();
+          const token = await messaging().getToken();
+          console.log('FCM Token mới:', token);
+          await updateFCMToken(token); // Cập nhật token mới
+        }
+      }
+    } catch (err) {
+      console.log('Error ==>', err);
+    }
+  };
+
+  // Lắng nghe sự kiện khi token FCM thay đổi
+  const listenForTokenRefresh = () => {
+    const unsubscribe = messaging().onTokenRefresh(async newToken => {
+      console.log('FCM Token refreshed:', newToken);
+      await updateFCMToken(newToken); // Cập nhật token mới khi nó thay đổi
+    });
+    return unsubscribe;
   };
 
   const requestUserPermission = async () => {
@@ -70,10 +88,15 @@ export default function useFirebaseNotifications() {
   };
 
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribeMessage = messaging().onMessage(async remoteMessage => {
       console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
     });
-    return unsubscribe;
+    const unsubscribeTokenRefresh = listenForTokenRefresh(); // Lắng nghe token thay đổi
+
+    return () => {
+      unsubscribeMessage();
+      unsubscribeTokenRefresh(); // Dọn dẹp sự kiện lắng nghe token thay đổi
+    };
   }, []);
 
   const goToDetail = async (tripId: string) => {
