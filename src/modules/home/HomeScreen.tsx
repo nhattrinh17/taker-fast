@@ -215,14 +215,16 @@ const HomeScreen = ({route}: Props) => {
     try {
       Geolocation.getCurrentPosition(async res => {
         const {latitude, longitude} = res.coords;
+
+        // Update current location when entering the app for the first time and when location changes
         if (
-          !currentLocation ||
+          (currentLocation.latitude == 0 && currentLocation.longitude == 0) ||
           currentLocation.latitude !== latitude ||
           currentLocation.longitude !== longitude
         ) {
           socketService.emit(SocketEvents.SHOE_MAKER_UPDATE_LOCATION, {
-            lat: currentLocation?.latitude,
-            lng: currentLocation?.longitude,
+            lat: latitude,
+            lng: longitude,
           });
           if (orderInProgress) {
             socketService.emit(SocketEvents.SHOE_MAKER_UPDATE_LOCATION, {
