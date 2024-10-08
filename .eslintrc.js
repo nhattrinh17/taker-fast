@@ -1,8 +1,3 @@
-// module.exports = {
-//   root: true,
-//   extends: '@react-native',
-// };
-
 module.exports = {
   root: true,
   extends: ['@react-native-community', 'plugin:@typescript-eslint/recommended'],
@@ -22,20 +17,20 @@ module.exports = {
     project: './tsconfig.json',
   },
   rules: {
-    'prettier/prettier': ['error', {}, { usePrettierrc: true }],
-    'react/jsx-filename-extension': [1, { extensions: ['.tsx'] }],
+    'prettier/prettier': ['error', {}, {usePrettierrc: true}],
+    'react/jsx-filename-extension': [1, {extensions: ['.tsx']}],
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-unused-vars': [
       'error',
-      { argsIgnorePattern: '^_', ignoreRestSiblings: true },
+      {argsIgnorePattern: '^_', ignoreRestSiblings: true},
     ],
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'no-use-before-define': 'off',
     // '@typescript-eslint/no-use-before-define': ['error'],
     '@typescript-eslint/ban-ts-comment': 'off',
-    'semi': [2, 'never'],
+    semi: [2, 'never'],
     'prettier/prettier': [
       'error',
       {
@@ -45,7 +40,7 @@ module.exports = {
       },
     ],
   },
-  
+
   settings: {
     'import/resolver': {
       node: {
@@ -53,7 +48,11 @@ module.exports = {
       },
     },
     'import/extensions': ['.js', '.ts', '.tsx'],
-    'react-native/style-sheet-object-names': ['EStyleSheet', 'OtherStyleSheet', 'PStyleSheet'],
+    'react-native/style-sheet-object-names': [
+      'EStyleSheet',
+      'OtherStyleSheet',
+      'PStyleSheet',
+    ],
     react: {
       version: 'detect',
     },

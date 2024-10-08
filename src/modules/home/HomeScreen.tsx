@@ -8,6 +8,7 @@ import {
   Dimensions,
   Vibration,
   Linking,
+  Text,
 } from 'react-native';
 import {Icons} from 'assets/icons';
 import MapView, {
@@ -33,7 +34,7 @@ import {
 } from 'services/src/serveRequest/serveService';
 import {appStore} from 'state/app';
 import {serveRequestStore} from 'state/serveRequest/serveRequestStore';
-import {showMessageError} from 'utils/index';
+import {calculateTimeDifferenceV2, showMessageError} from 'utils/index';
 import ModalSuccess from './components/ModalSuccess';
 import Sound from 'react-native-sound';
 import BackgroundTimer from 'react-native-background-timer';
@@ -195,6 +196,7 @@ const HomeScreen = ({route}: Props) => {
     latitude: location?.lat ?? 0,
     longitude: location?.long ?? 0,
   });
+  // console.log('🚀 ~ HomeScreen ~ currentLocation:', currentLocation);
 
   const mapRef = useRef<MapView | null>(null);
   const [region, setRegion] = useState<Region>({
@@ -282,7 +284,7 @@ const HomeScreen = ({route}: Props) => {
   };
 
   const onPressReceiveOrder = async (isAccept: boolean) => {
-    console.log('🚀 ~ onPressReceiveOrder ~ isAccept:', isAccept);
+    // console.log('🚀 ~ onPressReceiveOrder ~ isAccept:', isAccept);
     soundOrder.stop();
     setIsPressAcceptOrder(true);
     socketService.emit(SocketEvents.SHOE_MAKER_RESPONSE_TRIP, {
@@ -542,10 +544,7 @@ const HomeScreen = ({route}: Props) => {
   };
 
   const onRegionChangeComplete = (newRegion: Region, _details: Details) => {
-    if (
-      newRegion.latitude !== currentLocation.latitude ||
-      newRegion.longitude !== currentLocation.longitude
-    ) {
+    if (_details?.isGesture) {
       setRegion(newRegion);
     }
   };
@@ -585,6 +584,19 @@ const HomeScreen = ({route}: Props) => {
     if (isAccepted) {
       setLoading(true);
       try {
+        // Check location customer and shoemaker <= 150m
+        const {distance} = calculateTimeDifferenceV2(
+          currentLocation.latitude,
+          currentLocation.longitude,
+          +orderInProgress.latitude,
+          +orderInProgress.longitude,
+        );
+        if (distance > 0.15) {
+          showMessageError('Địa điểm gặp khách quá xa!');
+          return;
+        }
+
+        // Update status
         const response = await triggerUpdateStatusOrder({
           tripId: orderInProgress?.id,
           status: StatusUpdateOrder.MEETING,
@@ -700,6 +712,20 @@ const HomeScreen = ({route}: Props) => {
       </MapView>
 
       {orderInProgress ? renderActionBottom() : renderButtonCurrentLocation()}
+
+      {/* <TouchableOpacity
+        onPress={() => sendUpdateLocationToServer(21.0033963, 105.8196413)}
+        style={{
+          position: 'absolute',
+          left: 20,
+          top: 100,
+          backgroundColor: '#000000aa',
+          padding: 10,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Text>Demo update location</Text>
+      </TouchableOpacity> */}
       <NewOrder
         showModal={showModalNewOrder}
         onPressReceive={onPressReceiveOrder}

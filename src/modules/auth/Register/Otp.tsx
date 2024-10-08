@@ -1,23 +1,23 @@
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import CommonText from 'components/CommonText'
-import Header from 'components/Header'
-import React, {useEffect, useState} from 'react'
+import {Colors} from 'assets/Colors';
+import {Fonts} from 'assets/Fonts';
+import CommonText from 'components/CommonText';
+import Header from 'components/Header';
+import React, {useEffect, useState} from 'react';
 import {
   Platform,
   StyleSheet,
   View,
   Dimensions,
   TouchableOpacity,
-} from 'react-native'
-import {OtpInput} from 'react-native-otp-entry'
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view'
-import {navigate} from 'navigation/utils/navigationUtils'
-import {RouteProp} from '@react-navigation/native'
-import {RootNavigatorParamList} from 'navigation/typings'
-import {useSendSMS, useVerifyOtp} from 'services/src/auth'
-import {showMessageError} from 'utils/index'
-import {appStore} from 'state/app'
+} from 'react-native';
+import {OtpInput} from 'react-native-otp-entry';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {navigate} from 'navigation/utils/navigationUtils';
+import {RouteProp} from '@react-navigation/native';
+import {RootNavigatorParamList} from 'navigation/typings';
+import {useSendSMS, useVerifyOtp} from 'services/src/auth';
+import {showMessageError} from 'utils/index';
+import {appStore} from 'state/app';
 
 const styles = StyleSheet.create({
   container: {
@@ -76,58 +76,58 @@ const styles = StyleSheet.create({
     marginTop: 16,
     textAlign: 'center',
   },
-})
+});
 
 interface Props {
-  route: RouteProp<RootNavigatorParamList, 'Otp'>
+  route: RouteProp<RootNavigatorParamList, 'Otp'>;
 }
 
 const Otp = (props: Props) => {
-  const {phone, userId} = props?.route?.params
-  const {triggerVerifyOtp} = useVerifyOtp()
-  const {triggerSendSMS} = useSendSMS()
-  const {setLoading} = appStore(state => state)
-  const [error, setError] = useState<string>('')
+  const {phone, userId} = props?.route?.params;
+  const {triggerVerifyOtp} = useVerifyOtp();
+  const {triggerSendSMS} = useSendSMS();
+  const {setLoading} = appStore(state => state);
+  const [error, setError] = useState<string>('');
 
-  const [count, setCount] = useState(20)
+  const [count, setCount] = useState(20);
   useEffect(() => {
     if (count > 0) {
       const timerId = setTimeout(() => {
-        setCount(count - 1)
-      }, 1000)
-      return () => clearTimeout(timerId)
+        setCount(count - 1);
+      }, 1000);
+      return () => clearTimeout(timerId);
     }
-  }, [count])
+  }, [count]);
 
   const onFilledOTP = async (_value: string) => {
     try {
-      const response = await triggerVerifyOtp({userId, otp: _value})
+      const response = await triggerVerifyOtp({userId, otp: _value});
       if (response.type === 'success') {
-        navigate('RegisterPassword', {userId, phone, otp: _value})
+        navigate('RegisterPassword', {userId, phone, otp: _value});
       }
     } catch (err) {
-      setError('Mã xác thực sai. Vui lòng nhập lại')
-      console.log('Error call verify OTP ===>', err)
+      setError('Mã xác thực sai. Vui lòng nhập lại');
+      console.log('Error call verify OTP ===>', err);
     }
-  }
+  };
 
   const onChangeOTP = (_text: string) => {
-    setError('')
-  }
+    setError('');
+  };
 
   const resendOTP = async () => {
     try {
-      setLoading(true)
-      const response = await triggerSendSMS({phone})
+      setLoading(true);
+      const response = await triggerSendSMS({phone});
       if (response?.type?.toUpperCase() === 'SUCCESS') {
-        setCount(20)
+        setCount(20);
       }
     } catch (err) {
-      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau!')
+      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau!');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -138,8 +138,12 @@ const Otp = (props: Props) => {
         enableAutomaticScroll={Platform.OS === 'ios'}
         contentContainerStyle={styles.container}>
         <View style={styles.content}>
-          <CommonText
+          {/* <CommonText
             text={`Taker đang thực hiện cuộc gọi tới ${phone}. Vui lòng chờ trong giây lát.`}
+            styles={styles.label}
+          /> */}
+          <CommonText
+            text={`MÃ OTP ĐƯỢC GỬI VÀO TIN NHẮN CỦA BẠN SAU 20 GIÂY`}
             styles={styles.label}
           />
 
@@ -178,7 +182,7 @@ const Otp = (props: Props) => {
         </View>
       </KeyboardAwareScrollView>
     </View>
-  )
-}
+  );
+};
 
-export default Otp
+export default Otp;

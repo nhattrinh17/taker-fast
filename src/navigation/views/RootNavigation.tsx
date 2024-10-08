@@ -1,18 +1,18 @@
-import {NavigationContainer} from '@react-navigation/native'
-import {navigationRef} from 'navigation/utils/navigationUtils'
-import React, {useEffect} from 'react'
-import {NativeModules, Platform, StyleSheet} from 'react-native'
-import {SafeAreaProvider} from 'react-native-safe-area-context'
-import {userStore} from 'state/user'
-import Toast, {BaseToast, ToastConfig} from 'react-native-toast-message'
-import {Fonts} from 'assets/Fonts'
-import {Colors} from 'assets/Colors'
+import {NavigationContainer} from '@react-navigation/native';
+import {navigationRef} from 'navigation/utils/navigationUtils';
+import React, {useEffect} from 'react';
+import {NativeModules, Platform, StyleSheet} from 'react-native';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {userStore} from 'state/user';
+import Toast, {BaseToast, ToastConfig} from 'react-native-toast-message';
+import {Fonts} from 'assets/Fonts';
+import {Colors} from 'assets/Colors';
 
-import AuthStack from './AuthStack'
-import MainStack from './MainStack'
-import Loading from 'components/Loading'
-import {appStore} from 'state/app'
-import ModalInternet from 'components/ModalInternet'
+import AuthStack from './AuthStack';
+import MainStack from './MainStack';
+import Loading from 'components/Loading';
+import {appStore} from 'state/app';
+import ModalInternet from 'components/ModalInternet';
 
 const styles = StyleSheet.create({
   text2Style: {
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   typeError: {
     borderLeftColor: Colors.red,
   },
-})
+});
 
 const customToast: ToastConfig = {
   success: props => (
@@ -42,18 +42,18 @@ const customToast: ToastConfig = {
       text2Style={styles.text2Style}
     />
   ),
-}
+};
 
 const RootNavigation = () => {
-  const {SplashScreen} = NativeModules
-  const isLogin = userStore(state => state.token)
-  const isLoading = appStore(state => state.loading)
+  const {SplashScreen} = NativeModules;
+  const isLogin = userStore(state => state.token);
+  const isLoading = appStore(state => state.loading);
 
   useEffect(() => {
     if (Platform.OS === 'android') {
-      SplashScreen.hide()
+      SplashScreen.hide();
     }
-  }, [])
+  }, []);
 
   return (
     <>
@@ -66,7 +66,7 @@ const RootNavigation = () => {
       </SafeAreaProvider>
       <Toast config={customToast} />
     </>
-  )
-}
+  );
+};
 
-export default RootNavigation
+export default RootNavigation;
