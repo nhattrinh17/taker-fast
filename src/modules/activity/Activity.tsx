@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -6,22 +6,22 @@ import {
   Platform,
   TouchableOpacity,
   StatusBar,
-} from 'react-native'
-import CommonText from 'components/CommonText'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import Processing from './components/Processing'
-import History from './components/History'
+} from 'react-native';
+import CommonText from 'components/CommonText';
+import {Colors} from 'assets/Colors';
+import {Fonts} from 'assets/Fonts';
+import Processing from './components/Processing';
+import History from './components/History';
 import {
   useGetServiceInProgress,
   useUpdateStatusOrder,
-} from 'services/src/serveRequest/serveService'
-import {appStore} from 'state/app'
-import {StatusUpdateOrder} from 'services/src/typings'
-import {EventBus, EventBusType} from 'observer'
-import {serveRequestStore} from 'state/serveRequest/serveRequestStore'
-import {showMessageError} from 'utils/index'
-import {delay} from 'lodash'
+} from 'services/src/serveRequest/serveService';
+import {appStore} from 'state/app';
+import {StatusUpdateOrder} from 'services/src/typings';
+import {EventBus, EventBusType} from 'observer';
+import {serveRequestStore} from 'state/serveRequest/serveRequestStore';
+import {showMessageError} from 'utils/index';
+import {delay} from 'lodash';
 
 const styles = StyleSheet.create({
   container: {
@@ -111,89 +111,91 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     marginTop: 10,
   },
-})
+});
 
-const NUMBER_RETRY = 2
-let count = 0
+const NUMBER_RETRY = 2;
+let count = 0;
 
 const Activity = () => {
-  const {triggerUpdateStatusOrder} = useUpdateStatusOrder()
-  const {triggerServiceInProgress} = useGetServiceInProgress()
-  const setLoading = appStore(state => state.setLoading)
+  const {triggerUpdateStatusOrder} = useUpdateStatusOrder();
+  const {triggerServiceInProgress} = useGetServiceInProgress();
+  const setLoading = appStore(state => state.setLoading);
   const updateOrderInprogress = serveRequestStore(
     state => state.updateOrderInprogress,
-  )
-  const [inProgress, setInProgress] = useState<home.OrderInprogress | null>()
+  );
+  const [inProgress, setInProgress] = useState<home.OrderInprogress | null>();
 
   const [activeTab, setActiveTab] = React.useState<'HISTORY' | 'PROCESSING'>(
     'PROCESSING',
-  )
+  );
 
   const onPressItemHeader = (type: 'HISTORY' | 'PROCESSING') => () => {
-    setActiveTab(type)
-  }
+    setActiveTab(type);
+  };
 
   const onPressCompleted = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await triggerUpdateStatusOrder({
         tripId: inProgress?.id ?? '',
         status: StatusUpdateOrder.COMPLETED,
-      })
+      });
       if (response?.data === 'SUCCESS') {
-        setInProgress(null)
+        setInProgress(null);
       }
     } catch (err) {
-      console.log('Error when update status order', err)
-      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau!')
+      console.log('Error when update status order', err);
+      showMessageError('Có lỗi xảy ra, vui lòng thử lại sau!');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getServiceInProgress = ({
     isFirstTime = true,
   }: {
-    isFirstTime: boolean
+    isFirstTime: boolean;
   }) => {
-    setLoading(true)
+    setLoading(true);
     delay(async () => {
       try {
-        const response = await triggerServiceInProgress()
+        const response = await triggerServiceInProgress();
+        console.log('🚀 ~ delay ~ response:', response);
         if (response?.data?.length) {
-          setInProgress(response?.data?.[0])
-          updateOrderInprogress(response?.data?.[0])
+          setInProgress(response?.data?.[0]);
+          updateOrderInprogress(response?.data?.[0]);
         } else {
           if (!isFirstTime && count < NUMBER_RETRY) {
-            count += 1
-            getServiceInProgress({isFirstTime: false})
+            count += 1;
+            getServiceInProgress({isFirstTime: false});
           }
         }
       } catch (err) {
-        console.log('Error when get service in progress', err)
+        console.log('Error when get service in progress', err);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }, 1000)
-  }
+    }, 1000);
+  };
 
   useEffect(() => {
-    getServiceInProgress({isFirstTime: true})
-  }, [])
+    getServiceInProgress({isFirstTime: true});
+  }, []);
 
   useEffect(() => {
     EventBus.on(EventBusType.RECEIVE_NEW_ORDER, () => {
+      console.log('New order=======================');
       getServiceInProgress({
         isFirstTime: false,
-      })
-    })
+      });
+    });
     EventBus.on(EventBusType.COMPLETED_ORDER, () => {
-      setInProgress(null)
-    })
+      setInProgress(null);
+    });
     EventBus.on(EventBusType.CUSTOMER_CANCEL, () => {
-      setInProgress(null)
-    })
-  }, [])
+      setInProgress(null);
+    });
+  }, []);
 
   const renderHeader = () => (
     <View style={styles.z100}>
@@ -236,7 +238,7 @@ const Activity = () => {
         </View>
       </View>
     </View>
-  )
+  );
   return (
     <View style={styles.container}>
       {renderHeader()}
@@ -251,7 +253,7 @@ const Activity = () => {
         )}
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default Activity
+export default Activity;

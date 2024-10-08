@@ -239,6 +239,19 @@ const HomeScreen = ({route}: Props) => {
             longitude: longitude,
           });
         }
+
+        // Move the map to the current location regardless of whether it changed or not
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(
+            {
+              latitude: latitude,
+              longitude: longitude,
+              latitudeDelta: 0.01, // You can adjust these values based on your desired zoom level
+              longitudeDelta: 0.01,
+            },
+            1000,
+          ); // Animation duration (in milliseconds)
+        }
       });
     } catch (err) {
       console.log('Error when get current location ===>', err);
