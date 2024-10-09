@@ -1,22 +1,16 @@
-import {Colors} from 'assets/Colors';
-import {Fonts} from 'assets/Fonts';
-import {Icons} from 'assets/icons';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { Icons } from 'assets/icons';
 import CommonButton from 'components/Button';
 import CommonText from 'components/CommonText';
-import {navigate} from 'navigation/utils/navigationUtils';
-import React, {useState} from 'react';
-import {
-  StyleSheet,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-  Linking,
-} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {useCreateAccount, useVerifyPhoneNumber} from 'services/src/auth';
-import {appStore} from 'state/app';
+import { navigate } from 'navigation/utils/navigationUtils';
+import React, { useState } from 'react';
+import { StyleSheet, View, TextInput, TouchableOpacity, Platform, Linking } from 'react-native';
+import CheckBox from 'react-native-check-box';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useCreateAccount, useVerifyPhoneNumber } from 'services/src/auth';
+import { appStore } from 'state/app';
 
 const styles = StyleSheet.create({
   container: {
@@ -83,14 +77,24 @@ const styles = StyleSheet.create({
     fontSize: Fonts.fontSize[14],
     color: Colors.textSecondary,
   },
+  boxPolicy: {
+    paddingTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  textPolicy: {
+    fontSize: Fonts.fontSize[16],
+  },
 });
 
 const Phone = () => {
-  const {top} = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
   const setLoading = appStore(state => state.setLoading);
-  const {trigger} = useVerifyPhoneNumber();
-  const {triggerCreateAccount} = useCreateAccount();
+  const { trigger } = useVerifyPhoneNumber();
+  const { triggerCreateAccount } = useCreateAccount();
   const [phone, setPhone] = useState<string>('');
+  const [confirmPolicy, setConfirmPolicy] = useState(false);
 
   const isValidPhoneNumber = (phone: string) => {
     const vnPhoneRegex = /^(0|\\+84)[1-9][0-9]{8}$/;
@@ -106,8 +110,7 @@ const Phone = () => {
   };
 
   const shareAppLink = () => {
-    const urlAndroid =
-      'https://play.google.com/store/apps/details?id=com.taker.customer';
+    const urlAndroid = 'https://play.google.com/store/apps/details?id=com.taker.customer';
     const urlIOS = 'https://apps.apple.com/vn/app/taker/id6478909775';
     const url = Platform.OS === 'ios' ? urlIOS : urlAndroid;
     Linking.openURL(url).catch(err => console.error("Couldn't load page", err));
@@ -116,15 +119,15 @@ const Phone = () => {
   const handleContinuePress = async () => {
     try {
       setLoading(true);
-      const response = await trigger({phone});
+      const response = await trigger({ phone });
       console.log('🚀 ~ handleContinuePress ~ response:', response);
       if (response.data) {
         // Phone number already exists
-        navigate('Password', {phone});
+        navigate('Password', { phone });
       } else {
         // Create new account
         setLoading(true);
-        const responseCreate = await triggerCreateAccount({phone});
+        const responseCreate = await triggerCreateAccount({ phone });
         if (responseCreate.type === 'success') {
           navigate('Otp', {
             phone,
@@ -143,14 +146,8 @@ const Phone = () => {
       <TouchableOpacity style={styles.linkApp} onPress={shareAppLink}>
         <Icons.Logo />
         <View style={styles.linkAppText}>
-          <CommonText
-            styles={styles.linkAppTitle}
-            text="Bạn muốn đặt dịch vụ đánh giày ?"
-          />
-          <CommonText
-            styles={styles.linkAppLabel}
-            text="Tải về ứng dụng khách hàng để sử dụng"
-          />
+          <CommonText styles={styles.linkAppTitle} text="Bạn muốn đặt dịch vụ đánh giày ?" />
+          <CommonText styles={styles.linkAppLabel} text="Tải về ứng dụng khách hàng để sử dụng" />
         </View>
       </TouchableOpacity>
     );
@@ -158,12 +155,8 @@ const Phone = () => {
 
   return (
     <View style={styles.container}>
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        enableOnAndroid={false}
-        enableAutomaticScroll={Platform.OS === 'ios'}
-        contentContainerStyle={styles.container}>
-        <View style={{...styles.content, marginTop: top}}>
+      <KeyboardAwareScrollView keyboardShouldPersistTaps="handled" enableOnAndroid={false} enableAutomaticScroll={Platform.OS === 'ios'} contentContainerStyle={styles.container}>
+        <View style={{ ...styles.content, marginTop: top }}>
           {renderLinkApp()}
           {/* <CommonText
             styles={styles.title}
@@ -171,14 +164,7 @@ const Phone = () => {
           /> */}
           <CommonText styles={styles.desc} text="Nhập số điện thoại của bạn" />
           <View style={styles.wrapperInput}>
-            <TextInput
-              allowFontScaling={false}
-              autoFocus={true}
-              keyboardType="decimal-pad"
-              value={phone}
-              onChangeText={handlePhoneNumberChange}
-              style={styles.input}
-            />
+            <TextInput allowFontScaling={false} autoFocus={true} keyboardType="decimal-pad" value={phone} onChangeText={handlePhoneNumberChange} style={styles.input} />
 
             {phone !== '' && (
               <TouchableOpacity onPress={clearPhoneNumber}>
@@ -186,12 +172,21 @@ const Phone = () => {
               </TouchableOpacity>
             )}
           </View>
-          <CommonButton
-            isDisable={isValidPhoneNumber(phone) ? false : true}
-            text="Tiếp tục"
-            onPress={handleContinuePress}
-            buttonStyles={styles.btContinue}
-          />
+          <View style={styles.boxPolicy}>
+            <CheckBox
+              //
+              checkBoxColor={Colors.main}
+              style={{ width: 20, height: 20, marginRight: 12 }}
+              onClick={() => setConfirmPolicy(pre => !pre)}
+              isChecked={confirmPolicy}
+              leftText={'CheckBox'}
+            />
+            <CommonText text="Tôi đồng ý chấp nhận " styles={styles.textPolicy} />
+            <TouchableOpacity onPress={() => navigate('CommonWebView', { title: 'Điều khoản và dịch vụ', url: 'https://taker.vn/chinh-sach-bao-mat-va-dieu-kien-su-dung/' })}>
+              <CommonText text="điều khoản, dịch vụ" styles={{ ...styles.textPolicy, color: 'blue', textDecorationLine: 'underline' }} />
+            </TouchableOpacity>
+          </View>
+          <CommonButton isDisable={isValidPhoneNumber(phone) && confirmPolicy ? false : true} text="Tiếp tục" onPress={handleContinuePress} buttonStyles={styles.btContinue} />
         </View>
       </KeyboardAwareScrollView>
     </View>
