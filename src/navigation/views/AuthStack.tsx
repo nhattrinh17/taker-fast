@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {RootNavigatorParamList} from 'navigation/typings';
+import React, { useEffect, useState } from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { RootNavigatorParamList } from 'navigation/typings';
 import Phone from 'modules/auth/Phone';
 import Password from 'modules/auth/Login/Password';
 import RegisterPassword from 'modules/auth/Register/RegisterPassword';
@@ -11,21 +11,21 @@ import NewPassword from 'modules/auth/ForgetPassword/NewPassword';
 import Pending from 'modules/auth/Pending';
 import UploadAvatar from 'modules/auth/UploadAvatar';
 import CommonWebView from 'components/CommonWebView';
-import {userStore} from 'state/user';
-import {useGetStatus} from 'services/src/auth';
+import { userStore } from 'state/user';
+import { useGetStatus } from 'services/src/auth';
 
 const Stack = createNativeStackNavigator<RootNavigatorParamList>();
 
 const AuthStack = () => {
   const [initial, setInitial] = useState<string | null>(null);
   const user = userStore(state => state.user);
-  const {triggerGetStatus} = useGetStatus();
+  const { triggerGetStatus } = useGetStatus();
 
   useEffect(() => {
     const fetchStatus = async () => {
       if (user?.id) {
         try {
-          const response = await triggerGetStatus({userId: user.id});
+          const response = await triggerGetStatus({ userId: user.id });
           if (response?.type === 'success') {
             setInitial(getInitialRoute(response.data));
           }
@@ -45,9 +45,7 @@ const AuthStack = () => {
 
   console.log('initialRouteName', initial);
   return (
-    <Stack.Navigator
-      screenOptions={{headerShown: false}}
-      initialRouteName={initial}>
+    <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initial}>
       <Stack.Screen name="Phone" component={Phone} />
       <Stack.Screen name="Password" component={Password} />
       <Stack.Screen name="Otp" component={Otp} />

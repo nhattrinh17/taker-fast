@@ -1,7 +1,7 @@
-import axios, {AxiosError} from 'axios';
-import {Methods} from './typings';
-import {userStore} from 'state/user';
-import {BASE_URL} from './APIConfig';
+import axios, { AxiosError } from 'axios';
+import { Methods } from './typings';
+import { userStore } from 'state/user';
+import { BASE_URL } from './APIConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Sentry from '@sentry/react-native';
 const setToken = userStore.getState().setToken;
@@ -28,15 +28,7 @@ const getToken = async () => {
   return (await AsyncStorage.getItem('token')) ?? '';
 };
 
-export const fetcherAxios = async ({
-  url,
-  method,
-  data,
-}: {
-  url: string;
-  method: Methods;
-  data: any;
-}) => {
+export const fetcherAxios = async ({ url, method, data }: { url: string; method: Methods; data: any }) => {
   try {
     let response;
     const tokenFromStorage = await getToken();
@@ -45,7 +37,7 @@ export const fetcherAxios = async ({
     }
     switch (method) {
       case Methods.GET:
-        response = await axiosInstance.get(url, {params: data});
+        response = await axiosInstance.get(url, { params: data });
         break;
       case Methods.POST:
         response = await axiosInstance.post(url, data);
@@ -70,7 +62,7 @@ export const fetcherAxios = async ({
 
 export const fetcher = async (url: string, method: Methods, data?: any) => {
   try {
-    const response = await fetcherAxios({url, method, data});
+    const response = await fetcherAxios({ url, method, data });
     // console.log(`RESPONSE api ===> ${url}`, response)
     return response.data;
   } catch (error) {
@@ -85,12 +77,7 @@ export const fetcher = async (url: string, method: Methods, data?: any) => {
   }
 };
 
-export const fetcherGoogle = async (
-  url: string,
-  method: Methods,
-  data?: any,
-  headers?: any,
-) => {
-  console.log('check fetcher===>', {url, method, data, headers});
-  return axios.get(url, {params: data, headers: {...headers}});
+export const fetcherGoogle = async (url: string, method: Methods, data?: any, headers?: any) => {
+  console.log('check fetcher===>', { url, method, data, headers });
+  return axios.get(url, { params: data, headers: { ...headers } });
 };

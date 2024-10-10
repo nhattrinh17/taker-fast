@@ -1,33 +1,31 @@
-import {navigate} from 'navigation/utils/navigationUtils';
-import {useEffect} from 'react';
-import {Platform, PermissionsAndroid} from 'react-native';
-import messaging, {
-  FirebaseMessagingTypes,
-} from '@react-native-firebase/messaging';
-import {useSetFCMToken} from 'services/src/profile';
-import {NOTIFICATIONS_SCREEN} from 'utils/index';
-import {useGetDetailOrder} from 'services/src/serveRequest/serveService';
-import {EventBus, EventBusType} from 'observer';
+import { navigate } from 'navigation/utils/navigationUtils';
+import { useEffect } from 'react';
+import { Platform, PermissionsAndroid } from 'react-native';
+import messaging, { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { useSetFCMToken, useSetFCMTokenUserPending } from 'services/src/profile';
+import { NOTIFICATIONS_SCREEN } from 'utils/index';
+import { useGetDetailOrder } from 'services/src/serveRequest/serveService';
+import { EventBus, EventBusType } from 'observer';
 
-export default function useFirebaseNotifications() {
-  const {triggerUpdateFCMToken} = useSetFCMToken();
-  const {triggerGetDetailOrder} = useGetDetailOrder();
+export default function useFirebaseNotifications(userPending?: boolean, userId?: string) {
+  const { triggerUpdateFCMToken } = useSetFCMToken();
+  const { triggerUpdateFCMTokenUserPending } = useSetFCMTokenUserPending();
+  const { triggerGetDetailOrder } = useGetDetailOrder();
 
   const openHomeScreen = (remoteMessage: any) => {
-    const dataOrder: home.InformationOrder =
-      remoteMessage?.data as unknown as home.InformationOrder;
+    const dataOrder: home.InformationOrder = remoteMessage?.data as unknown as home.InformationOrder;
     const newOrder: home.InformationOrder = {
       ...dataOrder,
       services: JSON.parse(remoteMessage?.data?.services as string),
     };
-    return navigate('Home', {order: newOrder});
+    return navigate('Home', { order: newOrder });
   };
 
   // Cập nhật FCM token lên server
   const updateFCMToken = async (token: string) => {
     if (token) {
       try {
-        await triggerUpdateFCMToken({fcmToken: token});
+        const updateFCM = userPending && userId ? triggerUpdateFCMTokenUserPending({ fcmToken: token, userId }) : await triggerUpdateFCMToken({ fcmToken: token });
         console.log('FCM Token đã cập nhật lên server:', token);
       } catch (err) {
         console.log('Lỗi cập nhật token lên server:', err);
@@ -38,12 +36,8 @@ export default function useFirebaseNotifications() {
   const setFCMTokenUser = async () => {
     try {
       await messaging().registerDeviceForRemoteMessages();
-      const isDeviceRegisteredForRemoteMessages =
-        messaging().isDeviceRegisteredForRemoteMessages;
-      console.log(
-        '🚀 ~ setFCMTokenUser ~ isDeviceRegisteredForRemoteMessages:',
-        isDeviceRegisteredForRemoteMessages,
-      );
+      const isDeviceRegisteredForRemoteMessages = messaging().isDeviceRegisteredForRemoteMessages;
+      console.log('🚀 ~ setFCMTokenUser ~ isDeviceRegisteredForRemoteMessages:', isDeviceRegisteredForRemoteMessages);
 
       if (isDeviceRegisteredForRemoteMessages) {
         const permission = await messaging().hasPermission();
@@ -73,16 +67,12 @@ export default function useFirebaseNotifications() {
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().requestPermission();
       console.log('authStatus ==>', authStatus);
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+      const enabled = authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
       if (enabled) {
         setFCMTokenUser();
       }
     } else {
-      await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      );
+      await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS);
       setFCMTokenUser();
     }
   };
@@ -101,7 +91,7 @@ export default function useFirebaseNotifications() {
 
   const goToDetail = async (tripId: string) => {
     try {
-      const response = await triggerGetDetailOrder({id: tripId});
+      const response = await triggerGetDetailOrder({ id: tripId });
       if (response?.data) {
         navigate('DetailOrder', {
           itemDetail: response?.data,
@@ -142,10 +132,7 @@ export default function useFirebaseNotifications() {
 
   useEffect(() => {
     messaging().onNotificationOpenedApp(remoteMessage => {
-      console.log(
-        'Notification caused app to open from background state:',
-        remoteMessage,
-      );
+      console.log('Notification caused app to open from background state:', remoteMessage);
       openNotification(remoteMessage);
     });
 
@@ -154,10 +141,7 @@ export default function useFirebaseNotifications() {
       .then(remoteMessage => {
         if (remoteMessage) {
           EventBus.emit(EventBusType.RECEIVE_NOTIFICATION);
-          console.log(
-            'Notification caused app to open from quit state:',
-            remoteMessage,
-          );
+          console.log('Notification caused app to open from quit state:', remoteMessage);
           if (remoteMessage?.data?.services) {
             openHomeScreen(remoteMessage);
           }

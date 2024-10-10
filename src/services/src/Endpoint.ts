@@ -8,6 +8,7 @@ const Endpoint = {
     VERIFY_OTP: 'authentication/verify-otp',
     LOGOUT: '/authentication/logout',
     SEND_SMS: '/authentication/send-sms',
+    SET_FCM_TOKEN: '/authentication/set-fcm-token',
   },
   Profile: {
     COMMON: '/profile',
@@ -42,6 +43,6 @@ const Endpoint = {
   Notification: {
     GET_LIST: '/notifications',
   },
-}
+};
 
-export default Endpoint
+export default Endpoint;
