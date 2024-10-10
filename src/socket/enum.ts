@@ -18,4 +18,5 @@ export enum SocketEvents {
   PAYMENT_STATUS = 'payment-status',
   ONLINE = 'online',
   CLOSE = 'close',
+  TIME_OUT = 'timeout',
 }

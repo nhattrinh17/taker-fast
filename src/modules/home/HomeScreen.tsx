@@ -1,53 +1,35 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useRef, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  LayoutChangeEvent,
-  TouchableOpacity,
-  Dimensions,
-  Vibration,
-  Linking,
-  Text,
-} from 'react-native';
-import {Icons} from 'assets/icons';
-import MapView, {
-  Details,
-  Marker,
-  PROVIDER_GOOGLE,
-  Region,
-} from 'react-native-maps';
-import {Colors} from 'assets/Colors';
+import React, { useEffect, useRef, useState } from 'react';
+import { View, StyleSheet, LayoutChangeEvent, TouchableOpacity, Dimensions, Vibration, Linking, Text } from 'react-native';
+import { Icons } from 'assets/icons';
+import MapView, { Details, Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
+import { Colors } from 'assets/Colors';
 import HeaderHome from './components/HeaderHome';
-import {listStatus} from './constants';
+import { listStatus } from './constants';
 import NewOrder from './components/NewOrder';
-import {navigate} from 'navigation/utils/navigationUtils';
-import {EventBus, EventBusType} from 'observer';
-import {SocketEvents, SocketService} from 'socketIO';
+import { navigate } from 'navigation/utils/navigationUtils';
+import { EventBus, EventBusType } from 'observer';
+import { SocketEvents, SocketService } from 'socketIO';
 import Geolocation from '@react-native-community/geolocation';
 import CommonButton from 'components/Button';
-import {StatusUpdateOrder} from 'services/src/typings';
-import {
-  useGetOnlineStatus,
-  useUpdateActiveStatus,
-  useUpdateStatusOrder,
-} from 'services/src/serveRequest/serveService';
-import {appStore} from 'state/app';
-import {serveRequestStore} from 'state/serveRequest/serveRequestStore';
-import {calculateTimeDifferenceV2, showMessageError} from 'utils/index';
+import { StatusUpdateOrder } from 'services/src/typings';
+import { useGetOnlineStatus, useUpdateActiveStatus, useUpdateStatusOrder } from 'services/src/serveRequest/serveService';
+import { appStore } from 'state/app';
+import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
+import { calculateTimeDifferenceV2, showMessageError } from 'utils/index';
 import ModalSuccess from './components/ModalSuccess';
 import Sound from 'react-native-sound';
 import BackgroundTimer from 'react-native-background-timer';
 import CommonText from 'components/CommonText';
 import FastImage from 'react-native-fast-image';
-import {API_KEY_GOOGLE, s3Url} from 'services/src/APIConfig';
+import { API_KEY_GOOGLE, s3Url } from 'services/src/APIConfig';
 // import BackgroundService from 'react-native-background-actions'
-import {userStore} from 'state/user';
+import { userStore } from 'state/user';
 import * as Sentry from '@sentry/react-native';
-import {RouteProp} from '@react-navigation/native';
-import {RootNavigatorParamList} from 'navigation/typings';
+import { RouteProp } from '@react-navigation/native';
+import { RootNavigatorParamList } from 'navigation/typings';
 import OpenGoogleMapsDirections from 'components/GoogleMapDiections';
-// import MapViewDirections from 'react-native-maps-directions';
+import MapViewDirections from 'react-native-maps-directions';
 
 // const sleep = (time: number) =>
 //   new Promise(resolve => setTimeout(() => resolve(time), time))
@@ -140,7 +122,7 @@ const styles = StyleSheet.create({
   },
 });
 
-const {width, height} = Dimensions.get('screen');
+const { width, height } = Dimensions.get('screen');
 const LIMIT_TIME = 55;
 
 // const DELAY = 7000
@@ -165,27 +147,24 @@ interface Props {
   route: RouteProp<RootNavigatorParamList, 'Home'>;
 }
 
-const HomeScreen = ({route}: Props) => {
-  const {id: userID} = userStore(state => state?.user);
+const HomeScreen = ({ route }: Props) => {
+  const { id: userID } = userStore(state => state?.user);
   let socketService = SocketService.getInstance();
   // console.log('🚀 ~ HomeScreen ~ socketService:', socketService);
   const token = userStore(state => state.token);
   const location = serveRequestStore(state => state?.currentLocation);
   const setLoading = appStore(state => state.setLoading);
   const orderInProgress = serveRequestStore(state => state.orderInProgress);
-  const {triggerGetOnlineStatus} = useGetOnlineStatus();
-  const {triggerUpdateActiveStatus} = useUpdateActiveStatus();
-  const {triggerUpdateStatusOrder} = useUpdateStatusOrder();
-  const updateOrderInprogress = serveRequestStore(
-    state => state.updateOrderInprogress,
-  );
+  const { triggerGetOnlineStatus } = useGetOnlineStatus();
+  const { triggerUpdateActiveStatus } = useUpdateActiveStatus();
+  const { triggerUpdateStatusOrder } = useUpdateStatusOrder();
+  const updateOrderInprogress = serveRequestStore(state => state.updateOrderInprogress);
   const [havePermission, setHavePermission] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [isPressAcceptOrder, setIsPressAcceptOrder] = useState(false);
   const [status, setStatus] = useState<components.ItemDropdown>(listStatus[0]);
   const [showModalNewOrder, setShowModalNewOrder] = useState<boolean>(false);
-  const [informationOrder, setInformationOrder] =
-    useState<home.InformationOrder | null>(null);
+  const [informationOrder, setInformationOrder] = useState<home.InformationOrder | null>(null);
 
   const [countDown, setCountDown] = useState<number>(0);
 
@@ -208,7 +187,7 @@ const HomeScreen = ({route}: Props) => {
   const [showModalCancel, setShowModalCancel] = useState<{
     value: boolean;
     type: 'SUCCESS' | 'FAIL';
-  }>({value: false, type: 'SUCCESS'});
+  }>({ value: false, type: 'SUCCESS' });
 
   const onMapViewLayout = (_event: LayoutChangeEvent) => {
     //
@@ -216,14 +195,10 @@ const HomeScreen = ({route}: Props) => {
   const getCurrentLocation = async () => {
     try {
       Geolocation.getCurrentPosition(async res => {
-        const {latitude, longitude} = res.coords;
+        const { latitude, longitude } = res.coords;
 
         // Update current location when entering the app for the first time and when location changes
-        if (
-          (currentLocation.latitude == 0 && currentLocation.longitude == 0) ||
-          currentLocation.latitude !== latitude ||
-          currentLocation.longitude !== longitude
-        ) {
+        if ((currentLocation.latitude == 0 && currentLocation.longitude == 0) || currentLocation.latitude !== latitude || currentLocation.longitude !== longitude) {
           socketService.emit(SocketEvents.SHOE_MAKER_UPDATE_LOCATION, {
             lat: latitude,
             lng: longitude,
@@ -234,7 +209,7 @@ const HomeScreen = ({route}: Props) => {
               lng: longitude,
             });
           }
-          setCurrentLocation({latitude, longitude});
+          setCurrentLocation({ latitude, longitude });
           setRegion({
             ...region,
             latitude: latitude,
@@ -296,13 +271,17 @@ const HomeScreen = ({route}: Props) => {
     if (isAccept) {
       EventBus.emit(EventBusType.RECEIVE_NEW_ORDER);
       EventBus.on(EventBusType.COMPLETED_ORDER, () => {
-        setShowModalCancel({value: true, type: 'SUCCESS'});
+        setShowModalCancel({ value: true, type: 'SUCCESS' });
       });
 
       socketService.on(SocketEvents.TRIP_UPDATE, res => {
         if (res?.type === SocketEvents.CUSTOMER_CANCEL) {
-          setShowModalCancel({value: true, type: 'FAIL'});
+          setShowModalCancel({ value: true, type: 'FAIL' });
           EventBus.emit(EventBusType.CUSTOMER_CANCEL);
+          updateOrderInprogress(null);
+        } else if (res?.type === SocketEvents.TIME_OUT) {
+          setShowModalCancel({ value: true, type: 'FAIL' });
+          EventBus.emit(EventBusType.TIME_OUT_ORDER);
           updateOrderInprogress(null);
         }
       });
@@ -351,19 +330,19 @@ const HomeScreen = ({route}: Props) => {
     if (!isPressAcceptOrder && orderInProgress) {
       socketService.on(SocketEvents.TRIP_UPDATE, res => {
         if (res?.type === SocketEvents.CUSTOMER_CANCEL) {
-          setShowModalCancel({value: true, type: 'FAIL'});
+          setShowModalCancel({ value: true, type: 'FAIL' });
           EventBus.emit(EventBusType.CANCEL_ORDER_SUCCESS);
           updateOrderInprogress(null);
         }
       });
       EventBus.on(EventBusType.COMPLETED_ORDER, () => {
-        setShowModalCancel({value: true, type: 'SUCCESS'});
+        setShowModalCancel({ value: true, type: 'SUCCESS' });
       });
     }
   }, [orderInProgress]);
 
   const sendUpdateLocationToServer = (latitude: number, longitude: number) => {
-    socketService.emit(SocketEvents.ONLINE, {userID});
+    socketService.emit(SocketEvents.ONLINE, { userID });
     socketService.emit(SocketEvents.SHOE_MAKER_UPDATE_LOCATION, {
       lat: latitude,
       lng: longitude,
@@ -386,23 +365,16 @@ const HomeScreen = ({route}: Props) => {
     const watchId = Geolocation.watchPosition(
       async success => {
         Sentry.configureScope(scope => {
-          scope.setTag(
-            'location-update-group',
-            `${userID} - background-location-update `,
-          );
+          scope.setTag('location-update-group', `${userID} - background-location-update `);
         });
         Sentry.captureMessage('Success when updating location');
         console.error('Update location ==>', {
           socket: socketService,
         });
-        const {latitude, longitude} = success.coords;
-        console.log(
-          '🚀 ~ useEffect ~ latitude, longitude:',
-          latitude,
-          longitude,
-        );
+        const { latitude, longitude } = success.coords;
+        console.log('🚀 ~ useEffect ~ latitude, longitude:', latitude, longitude);
         console.log(`Update location: ${latitude}, ${longitude}`);
-        setCurrentLocation({latitude, longitude});
+        setCurrentLocation({ latitude, longitude });
         setRegion({
           ...region,
           latitude: latitude,
@@ -428,13 +400,10 @@ const HomeScreen = ({route}: Props) => {
             Sentry.captureException(err);
           }
         } else {
-          console.error(
-            'Success update location when still connect socket ==>',
-            {
-              latitude,
-              longitude,
-            },
-          );
+          console.error('Success update location when still connect socket ==>', {
+            latitude,
+            longitude,
+          });
           sendUpdateLocationToServer(latitude, longitude);
         }
       },
@@ -559,22 +528,17 @@ const HomeScreen = ({route}: Props) => {
 
   const renderButtonCurrentLocation = () => {
     return (
-      <TouchableOpacity
-        style={styles.btCurrentLocationRelative}
-        onPress={onPressCurrentLocation}>
+      <TouchableOpacity style={styles.btCurrentLocationRelative} onPress={onPressCurrentLocation}>
         <Icons.CurrentLocation />
       </TouchableOpacity>
     );
   };
 
-  const onBackdropPress = () =>
-    setShowModalCancel({value: false, type: 'SUCCESS'});
+  const onBackdropPress = () => setShowModalCancel({ value: false, type: 'SUCCESS' });
 
   const goToProcessOrder = () => {
     navigate('TakePictures', {
-      type: [StatusUpdateOrder.INPROGRESS].includes(orderInProgress?.status)
-        ? 'OUT'
-        : 'IN',
+      type: [StatusUpdateOrder.INPROGRESS].includes(orderInProgress?.status) ? 'OUT' : 'IN',
       tripId: orderInProgress?.id ?? '',
     });
   };
@@ -585,12 +549,7 @@ const HomeScreen = ({route}: Props) => {
       setLoading(true);
       try {
         // Check location customer and shoemaker <= 150m
-        const {distance} = calculateTimeDifferenceV2(
-          currentLocation.latitude,
-          currentLocation.longitude,
-          +orderInProgress.latitude,
-          +orderInProgress.longitude,
-        );
+        const { distance } = calculateTimeDifferenceV2(currentLocation.latitude, currentLocation.longitude, +orderInProgress.latitude, +orderInProgress.longitude);
         if (distance > 0.15) {
           showMessageError('Địa điểm gặp khách quá xa!');
           return;
@@ -618,8 +577,7 @@ const HomeScreen = ({route}: Props) => {
     }
   };
 
-  const onMakeCall = () =>
-    Linking.openURL(`tel:${orderInProgress?.customer?.phone}`);
+  const onMakeCall = () => Linking.openURL(`tel:${orderInProgress?.customer?.phone}`);
 
   const renderActionBottom = () => {
     return (
@@ -637,10 +595,7 @@ const HomeScreen = ({route}: Props) => {
             <View style={styles.wrapperInformation}>
               <View>
                 <CommonText text={orderInProgress?.customer?.fullName ?? ''} />
-                <CommonText
-                  text={orderInProgress?.customer?.phone ?? ''}
-                  styles={styles.phoneNumber}
-                />
+                <CommonText text={orderInProgress?.customer?.phone ?? ''} styles={styles.phoneNumber} />
               </View>
               <TouchableOpacity onPress={onMakeCall}>
                 <Icons.Phone />
@@ -649,11 +604,7 @@ const HomeScreen = ({route}: Props) => {
           </View>
 
           <View style={styles.boxBtnAction}>
-            <CommonButton
-              text={renderTextNextStatus(orderInProgress?.status ?? '')}
-              onPress={onPressUpdateStatusOrder}
-              buttonStyles={styles.btAction}
-            />
+            <CommonButton text={renderTextNextStatus(orderInProgress?.status ?? '')} onPress={onPressUpdateStatusOrder} buttonStyles={styles.btAction} />
 
             {orderInProgress?.status == StatusUpdateOrder.ACCEPTED && (
               <OpenGoogleMapsDirections
@@ -667,9 +618,7 @@ const HomeScreen = ({route}: Props) => {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.btCurrentLocation}
-          onPress={onPressCurrentLocation}>
+        <TouchableOpacity style={styles.btCurrentLocation} onPress={onPressCurrentLocation}>
           <Icons.CurrentLocation />
         </TouchableOpacity>
       </View>
@@ -691,9 +640,10 @@ const HomeScreen = ({route}: Props) => {
         // showsUserLocation
         scrollDuringRotateOrZoomEnabled={false}>
         {/* <MapViewDirections
+          //
           apikey={API_KEY_GOOGLE}
           origin={currentLocation}
-          destination={{latitude: 37.771707, longitude: -122.4053769}}
+          destination={{ latitude: 37.771707, longitude: -122.4053769 }}
         /> */}
 
         <Marker coordinate={currentLocation} tracksViewChanges={false}>
@@ -724,27 +674,15 @@ const HomeScreen = ({route}: Props) => {
           justifyContent: 'center',
           alignItems: 'center',
         }}>
-        <Text>Demo update location</Text>
+        <Text style={{ color: Colors.white }}>Demo update location</Text>
       </TouchableOpacity> */}
-      <NewOrder
-        showModal={showModalNewOrder}
-        onPressReceive={onPressReceiveOrder}
-        item={informationOrder!}
-      />
+      <NewOrder showModal={showModalNewOrder} onPressReceive={onPressReceiveOrder} item={informationOrder!} />
       <ModalSuccess
         onBackdropPress={onBackdropPress}
         isVisible={showModalCancel.value}
         type={showModalCancel.type}
-        title={
-          showModalCancel.type === 'FAIL'
-            ? 'Đơn hàng đã bị hủy'
-            : 'Đơn hàng đã hoàn thành'
-        }
-        desc={
-          showModalCancel.type === 'FAIL'
-            ? 'Khách hàng đã hủy đơn, bây giờ bạn có thể nhận các đơn hàng mới'
-            : 'Chúc mừng bạn đã hoàn thành đơn'
-        }
+        title={showModalCancel.type === 'FAIL' ? 'Đơn hàng đã bị hủy' : 'Đơn hàng đã hoàn thành'}
+        desc={showModalCancel.type === 'FAIL' ? 'Khách hàng đã hủy đơn, bây giờ bạn có thể nhận các đơn hàng mới' : 'Chúc mừng bạn đã hoàn thành đơn'}
       />
     </View>
   );
