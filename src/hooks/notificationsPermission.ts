@@ -122,6 +122,9 @@ export default function useFirebaseNotifications(userPending?: boolean, userId?:
           case NOTIFICATIONS_SCREEN.WALLET:
             navigate('Wallet');
             break;
+          case NOTIFICATIONS_SCREEN.UPLOAD_AVATAR:
+            navigate('UploadAvatar');
+            break;
           default:
             navigate('NotificationStack');
             break;

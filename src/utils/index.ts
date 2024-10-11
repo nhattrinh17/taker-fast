@@ -1,6 +1,6 @@
-import {Colors} from 'assets/Colors';
+import { Colors } from 'assets/Colors';
 import Toast from 'react-native-toast-message';
-import {StatusUpdateOrder} from 'services/src/typings';
+import { StatusUpdateOrder } from 'services/src/typings';
 export * from './webSocketHandler';
 export * from './time-calculator';
 
@@ -33,11 +33,7 @@ export function formatCurrency(amount: number): string {
 }
 
 export const totalPrice = (products: home.TripService[]) => {
-  return products?.reduce(
-    (total, item) =>
-      total + (item?.discountPrice ?? item?.price) * item?.quantity,
-    0,
-  );
+  return products?.reduce((total, item) => total + (item?.discountPrice ?? item?.price) * item?.quantity, 0);
 };
 
 export const renderStatusOrder = (status: StatusUpdateOrder) => {
@@ -97,4 +93,5 @@ export const NOTIFICATIONS_SCREEN = {
   DETAIL_NOTIFICATION: 'DETAIL_NOTIFICATION',
   ORDER: 'ORDER',
   RATING: 'RATING',
+  UPLOAD_AVATAR: 'UploadAvatar',
 };
