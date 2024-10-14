@@ -95,3 +95,26 @@ export const NOTIFICATIONS_SCREEN = {
   RATING: 'RATING',
   UPLOAD_AVATAR: 'UploadAvatar',
 };
+
+export const renderTextModalHomeScreen = (type: 'SUCCESS' | 'FAIL' | 'TIMEOUT') => {
+  let title = '';
+  let desc = '';
+  switch (type) {
+    case 'SUCCESS':
+      title = 'Đơn hàng đã hoàn thành';
+      desc = 'Chúc mừng bạn đã hoàn thành đơn';
+      break;
+    case 'FAIL':
+      title = 'Đơn hàng đã bị hủy';
+      desc = 'Khách hàng đã hủy đơn, bây giờ bạn có thể nhận các đơn hàng mới';
+      break;
+    case 'TIMEOUT':
+      title = 'Đơn hàng đã được giao cho tài xế khác';
+      desc = 'Đơn hàng của bạn đã được giao cho tài xế khác, vui lòng nhận đơn hàng mới';
+      break;
+    default:
+      break;
+  }
+
+  return { title, desc };
+};

@@ -1,27 +1,17 @@
-import React, {useEffect, useState} from 'react';
-import {
-  View,
-  StyleSheet,
-  SafeAreaView,
-  Platform,
-  TouchableOpacity,
-  StatusBar,
-} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, SafeAreaView, Platform, TouchableOpacity, StatusBar } from 'react-native';
 import CommonText from 'components/CommonText';
-import {Colors} from 'assets/Colors';
-import {Fonts} from 'assets/Fonts';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
 import Processing from './components/Processing';
 import History from './components/History';
-import {
-  useGetServiceInProgress,
-  useUpdateStatusOrder,
-} from 'services/src/serveRequest/serveService';
-import {appStore} from 'state/app';
-import {StatusUpdateOrder} from 'services/src/typings';
-import {EventBus, EventBusType} from 'observer';
-import {serveRequestStore} from 'state/serveRequest/serveRequestStore';
-import {showMessageError} from 'utils/index';
-import {delay} from 'lodash';
+import { useGetServiceInProgress, useUpdateStatusOrder } from 'services/src/serveRequest/serveService';
+import { appStore } from 'state/app';
+import { StatusUpdateOrder } from 'services/src/typings';
+import { EventBus, EventBusType } from 'observer';
+import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
+import { showMessageError } from 'utils/index';
+import { delay } from 'lodash';
 
 const styles = StyleSheet.create({
   container: {
@@ -117,17 +107,13 @@ const NUMBER_RETRY = 2;
 let count = 0;
 
 const Activity = () => {
-  const {triggerUpdateStatusOrder} = useUpdateStatusOrder();
-  const {triggerServiceInProgress} = useGetServiceInProgress();
+  const { triggerUpdateStatusOrder } = useUpdateStatusOrder();
+  const { triggerServiceInProgress } = useGetServiceInProgress();
   const setLoading = appStore(state => state.setLoading);
-  const updateOrderInprogress = serveRequestStore(
-    state => state.updateOrderInprogress,
-  );
+  const updateOrderInprogress = serveRequestStore(state => state.updateOrderInprogress);
   const [inProgress, setInProgress] = useState<home.OrderInprogress | null>();
 
-  const [activeTab, setActiveTab] = React.useState<'HISTORY' | 'PROCESSING'>(
-    'PROCESSING',
-  );
+  const [activeTab, setActiveTab] = React.useState<'HISTORY' | 'PROCESSING'>('PROCESSING');
 
   const onPressItemHeader = (type: 'HISTORY' | 'PROCESSING') => () => {
     setActiveTab(type);
@@ -151,23 +137,19 @@ const Activity = () => {
     }
   };
 
-  const getServiceInProgress = ({
-    isFirstTime = true,
-  }: {
-    isFirstTime: boolean;
-  }) => {
+  const getServiceInProgress = ({ isFirstTime = true }: { isFirstTime: boolean }) => {
     setLoading(true);
     delay(async () => {
       try {
         const response = await triggerServiceInProgress();
-        console.log('🚀 ~ delay ~ response:', response);
+        // console.log('🚀 ~ delay ~ response:111', response);
         if (response?.data?.length) {
           setInProgress(response?.data?.[0]);
           updateOrderInprogress(response?.data?.[0]);
         } else {
           if (!isFirstTime && count < NUMBER_RETRY) {
             count += 1;
-            getServiceInProgress({isFirstTime: false});
+            getServiceInProgress({ isFirstTime: false });
           }
         }
       } catch (err) {
@@ -179,7 +161,7 @@ const Activity = () => {
   };
 
   useEffect(() => {
-    getServiceInProgress({isFirstTime: true});
+    getServiceInProgress({ isFirstTime: true });
   }, []);
 
   useEffect(() => {
@@ -200,18 +182,12 @@ const Activity = () => {
   const renderHeader = () => (
     <View style={styles.z100}>
       <SafeAreaView style={styles.safeArea} />
-      <StatusBar
-        translucent={true}
-        barStyle={'dark-content'}
-        backgroundColor={Colors.transparent}
-      />
+      <StatusBar translucent={true} barStyle={'dark-content'} backgroundColor={Colors.transparent} />
 
       <View style={styles.wrapperHeader}>
         <CommonText text="Đơn hàng" styles={styles.titleHeader} />
         <View style={styles.rowRightHeader}>
-          <TouchableOpacity
-            style={{...(activeTab === 'PROCESSING' && styles.activeButton)}}
-            onPress={onPressItemHeader('PROCESSING')}>
+          <TouchableOpacity style={{ ...(activeTab === 'PROCESSING' && styles.activeButton) }} onPress={onPressItemHeader('PROCESSING')}>
             <CommonText
               text="Đang thực hiện"
               styles={{
@@ -242,16 +218,7 @@ const Activity = () => {
   return (
     <View style={styles.container}>
       {renderHeader()}
-      <View style={styles.wrapperContent}>
-        {activeTab === 'PROCESSING' ? (
-          <Processing
-            inProgress={inProgress!}
-            onPressCompleted={onPressCompleted}
-          />
-        ) : (
-          <History />
-        )}
-      </View>
+      <View style={styles.wrapperContent}>{activeTab === 'PROCESSING' ? <Processing inProgress={inProgress!} onPressCompleted={onPressCompleted} /> : <History />}</View>
     </View>
   );
 };

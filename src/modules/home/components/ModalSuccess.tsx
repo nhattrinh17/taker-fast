@@ -1,9 +1,9 @@
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import {Icons} from 'assets/icons'
-import CommonText from 'components/CommonText'
-import React from 'react'
-import {View, StyleSheet, Dimensions, TouchableOpacity} from 'react-native'
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { Icons } from 'assets/icons';
+import CommonText from 'components/CommonText';
+import React from 'react';
+import { View, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
@@ -42,25 +42,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 20,
   },
-})
+});
 
 interface PropsModal {
-  isVisible: boolean
-  title: string
-  desc?: string
-  onBackdropPress: () => void
-  type?: 'SUCCESS' | 'FAIL'
+  isVisible: boolean;
+  title: string;
+  desc?: string;
+  onBackdropPress: () => void;
+  type?: 'SUCCESS' | 'FAIL' | 'TIMEOUT';
 }
 
-const ModalSuccess = ({
-  isVisible,
-  title,
-  desc,
-  onBackdropPress,
-  type = 'SUCCESS',
-}: PropsModal) => {
+const ModalSuccess = ({ isVisible, title, desc, onBackdropPress, type = 'SUCCESS' }: PropsModal) => {
   if (!isVisible) {
-    return null
+    return null;
   }
 
   return (
@@ -73,7 +67,7 @@ const ModalSuccess = ({
         </View>
       </TouchableOpacity>
     </View>
-  )
-}
+  );
+};
 
-export default ModalSuccess
+export default ModalSuccess;

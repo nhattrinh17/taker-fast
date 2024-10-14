@@ -16,7 +16,7 @@ import { StatusUpdateOrder } from 'services/src/typings';
 import { useGetOnlineStatus, useUpdateActiveStatus, useUpdateStatusOrder } from 'services/src/serveRequest/serveService';
 import { appStore } from 'state/app';
 import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
-import { calculateTimeDifferenceV2, showMessageError } from 'utils/index';
+import { calculateTimeDifferenceV2, renderTextModalHomeScreen, showMessageError } from 'utils/index';
 import ModalSuccess from './components/ModalSuccess';
 import Sound from 'react-native-sound';
 import BackgroundTimer from 'react-native-background-timer';
@@ -186,7 +186,7 @@ const HomeScreen = ({ route }: Props) => {
   });
   const [showModalCancel, setShowModalCancel] = useState<{
     value: boolean;
-    type: 'SUCCESS' | 'FAIL';
+    type: 'SUCCESS' | 'FAIL' | 'TIMEOUT';
   }>({ value: false, type: 'SUCCESS' });
 
   const onMapViewLayout = (_event: LayoutChangeEvent) => {
@@ -280,7 +280,8 @@ const HomeScreen = ({ route }: Props) => {
           EventBus.emit(EventBusType.CUSTOMER_CANCEL);
           updateOrderInprogress(null);
         } else if (res?.type === SocketEvents.TIME_OUT) {
-          setShowModalCancel({ value: true, type: 'FAIL' });
+          // console.log('Timeoutttttttttttt');
+          setShowModalCancel({ value: true, type: 'TIMEOUT' });
           EventBus.emit(EventBusType.TIME_OUT_ORDER);
           updateOrderInprogress(null);
         }
@@ -330,6 +331,7 @@ const HomeScreen = ({ route }: Props) => {
     if (!isPressAcceptOrder && orderInProgress) {
       socketService.on(SocketEvents.TRIP_UPDATE, res => {
         if (res?.type === SocketEvents.CUSTOMER_CANCEL) {
+          // console.log('Customer canceledddddđ');
           setShowModalCancel({ value: true, type: 'FAIL' });
           EventBus.emit(EventBusType.CANCEL_ORDER_SUCCESS);
           updateOrderInprogress(null);
@@ -677,13 +679,7 @@ const HomeScreen = ({ route }: Props) => {
         <Text style={{ color: Colors.white }}>Demo update location</Text>
       </TouchableOpacity> */}
       <NewOrder showModal={showModalNewOrder} onPressReceive={onPressReceiveOrder} item={informationOrder!} />
-      <ModalSuccess
-        onBackdropPress={onBackdropPress}
-        isVisible={showModalCancel.value}
-        type={showModalCancel.type}
-        title={showModalCancel.type === 'FAIL' ? 'Đơn hàng đã bị hủy' : 'Đơn hàng đã hoàn thành'}
-        desc={showModalCancel.type === 'FAIL' ? 'Khách hàng đã hủy đơn, bây giờ bạn có thể nhận các đơn hàng mới' : 'Chúc mừng bạn đã hoàn thành đơn'}
-      />
+      <ModalSuccess onBackdropPress={onBackdropPress} isVisible={showModalCancel.value} type={showModalCancel.type} title={renderTextModalHomeScreen(showModalCancel.type).title} desc={renderTextModalHomeScreen(showModalCancel.type).desc} />
     </View>
   );
 };
