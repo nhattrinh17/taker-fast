@@ -1,13 +1,6 @@
-import {Icons} from 'assets/icons';
+import { Icons } from 'assets/icons';
 import React from 'react';
-import {
-  Button,
-  Linking,
-  Alert,
-  TouchableOpacity,
-  Text,
-  View,
-} from 'react-native';
+import { Button, Linking, Alert, TouchableOpacity, Text, View, Platform } from 'react-native';
 
 const OpenGoogleMapsDirections = ({
   origin,
@@ -23,17 +16,32 @@ const OpenGoogleMapsDirections = ({
   };
 }): JSX.Element => {
   const openGoogleMaps = () => {
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}`;
+    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}`;
+    const appleMapsUrl = `http://maps.apple.com/?saddr=${origin.latitude},${origin.longitude}&daddr=${destination.latitude},${destination.longitude}`;
 
-    Linking.canOpenURL(url)
-      .then(supported => {
-        if (supported) {
-          Linking.openURL(url);
-        } else {
-          Alert.alert('Không thể mở ứng dụng bản đồ');
-        }
-      })
-      .catch(err => Alert.alert('Lỗi xảy ra', err));
+    if (Platform.OS === 'android') {
+      // Mở Google Maps trên Android
+      Linking.canOpenURL(googleMapsUrl)
+        .then(supported => {
+          if (supported) {
+            Linking.openURL(googleMapsUrl);
+          } else {
+            Alert.alert('Không thể mở ứng dụng Google Maps');
+          }
+        })
+        .catch(err => Alert.alert('Lỗi xảy ra', err));
+    } else if (Platform.OS === 'ios') {
+      // Mở Apple Maps trên iOS
+      Linking.canOpenURL(appleMapsUrl)
+        .then(supported => {
+          if (supported) {
+            Linking.openURL(appleMapsUrl);
+          } else {
+            Alert.alert('Không thể mở ứng dụng Apple Maps');
+          }
+        })
+        .catch(err => Alert.alert('Lỗi xảy ra', err));
+    }
   };
 
   return (

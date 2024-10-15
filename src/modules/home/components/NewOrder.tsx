@@ -1,14 +1,14 @@
-import React, {useEffect, useRef} from 'react'
-import {View, StyleSheet, TouchableOpacity, Dimensions} from 'react-native'
-import {Icons} from 'assets/icons'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import CommonText from 'components/CommonText'
-import CommonButton from 'components/Button'
-import {formatCurrency} from 'utils/index'
-import {s3Url} from 'services/src/APIConfig'
-import FastImage from 'react-native-fast-image'
-import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet'
+import React, { useEffect, useRef } from 'react';
+import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { Icons } from 'assets/icons';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import CommonText from 'components/CommonText';
+import CommonButton from 'components/Button';
+import { formatCurrency } from 'utils/index';
+import { s3Url } from 'services/src/APIConfig';
+import FastImage from 'react-native-fast-image';
+import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
 
 const styles = StyleSheet.create({
   container: {
@@ -89,6 +89,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: Fonts.fontFamily.AvertaBold,
   },
+
+  totalIncome: {
+    fontWeight: '700',
+    fontFamily: Fonts.fontFamily.AvertaBold,
+    color: Colors.main,
+    paddingTop: 8,
+  },
   line: {
     backgroundColor: Colors.gallery,
     width: Dimensions.get('window').width,
@@ -158,32 +165,32 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     bottom: 20,
   },
-})
+});
 
 interface Props {
-  showModal: boolean
-  onPressReceive: (isAccept: boolean) => void
-  item: home.InformationOrder
+  showModal: boolean;
+  onPressReceive: (isAccept: boolean) => void;
+  item: home.InformationOrder;
 }
 
-const NewOrder = ({showModal, onPressReceive, item}: Props) => {
-  const actionSheetRef = useRef<ActionSheetRef>(null)
+const NewOrder = ({ showModal, onPressReceive, item }: Props) => {
+  const actionSheetRef = useRef<ActionSheetRef>(null);
 
   const onPressReceiveOrder = (isAccept: boolean) => () => {
-    onPressReceive?.(isAccept)
-  }
+    onPressReceive?.(isAccept);
+  };
 
   useEffect(() => {
     if (showModal) {
       if (!actionSheetRef?.current?.isOpen()) {
-        actionSheetRef?.current?.show()
+        actionSheetRef?.current?.show();
       }
     } else {
       if (actionSheetRef?.current?.isOpen()) {
-        actionSheetRef?.current?.hide()
+        actionSheetRef?.current?.hide();
       }
     }
-  }, [showModal])
+  }, [showModal]);
 
   const renderInformationCustomer = () => {
     return (
@@ -203,8 +210,8 @@ const NewOrder = ({showModal, onPressReceive, item}: Props) => {
           <CommonText text={item?.fullName ?? ''} />
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   const renderLocation = () => {
     return (
@@ -212,42 +219,38 @@ const NewOrder = ({showModal, onPressReceive, item}: Props) => {
         <View style={styles.wrapperDistance}>
           <Icons.LocationMark />
           <CommonText text="Khoảng cách" styles={styles.distance} />
-          <CommonText
-            text={Number(item?.distance)?.toFixed(2) + 'km'}
-            styles={styles.valueDistance}
-          />
+          <CommonText text={Number(item?.distance)?.toFixed(2) + 'km'} styles={styles.valueDistance} />
+          <CommonText text="Thời gian dự kiến" styles={styles.distance} />
+          <CommonText text={Number(item?.time)?.toFixed(2) + "'"} styles={styles.valueDistance} />
         </View>
         <View style={styles.wrapperLocation}>
-          <View style={{...styles.rowText}}>
+          <View style={{ ...styles.rowText }}>
             <CommonText text="Địa chỉ:" />
             <CommonText text={item?.location ?? ''} styles={styles.address} />
           </View>
           {item?.addressNote && item?.addressNote !== '' && (
             <View style={[styles.rowText, styles.mt6]}>
               <CommonText text="Ghi chú:" />
-              <CommonText
-                text={item?.addressNote ?? ''}
-                styles={styles.address}
-              />
+              <CommonText text={item?.addressNote ?? ''} styles={styles.address} />
             </View>
           )}
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   const renderTextTypePayment = () => {
     switch (item?.paymentMethod) {
       case 'DIGITAL_WALLET':
-        return 'Ví Taker'
+        return 'Ví Taker';
       case 'OFFLINE_PAYMENT':
-        return 'Tiền mặt'
+        return 'Tiền mặt';
       case 'CREDIT_CARD':
-        return 'Qr Code/Thẻ Visa/Master/Nội địa'
+        return 'Qr Code/Thẻ Visa/Master/Nội địa';
       default:
-        return 'Tiền mặt'
+        return 'Tiền mặt';
     }
-  }
+  };
 
   const renderInfoOrder = () => {
     return (
@@ -255,70 +258,53 @@ const NewOrder = ({showModal, onPressReceive, item}: Props) => {
         <CommonText text="Thông tin đơn hàng" styles={styles.textPlaceholder} />
         {item?.services?.map((itemService, index) => (
           <View key={index} style={styles.rowItemMenu}>
-            <CommonText
-              text={`${itemService?.quantity} ${itemService?.name}`}
-            />
-            <CommonText
-              text={`${formatCurrency(
-                itemService?.discountPrice ?? itemService?.price,
-              )} đ`}
-            />
+            <CommonText text={`${itemService?.quantity} ${itemService?.name}`} />
+            <CommonText text={`${formatCurrency(itemService?.discountPrice ?? itemService?.price)} đ`} />
           </View>
         ))}
         <View style={styles.rowItemMenu}>
           <CommonText text="Tổng tiền" styles={styles.total} />
-          <CommonText
-            text={formatCurrency(item?.totalPrice ?? 0) + ' đ'}
-            styles={styles.totalPrice}
-          />
+          <CommonText text={formatCurrency(item?.totalPrice ?? 0) + ' đ'} styles={styles.totalPrice} />
         </View>
+        <View style={styles.rowItemMenu}>
+          <CommonText text="Thu nhập dự kiến" styles={styles.total} />
+          <CommonText text={formatCurrency((item?.totalPrice || 0) - (item?.free || 0)) + ' đ'} styles={styles.totalIncome} />
+        </View>
+
         <View style={[styles.rowItemMenu, styles.mt6]}>
           <CommonText text="Thanh toán bằng" />
           <CommonText text={renderTextTypePayment()} />
         </View>
       </View>
-    )
-  }
+    );
+  };
 
   const renderInfoPayment = () => {
     if (item?.paymentMethod !== 'OFFLINE_PAYMENT') {
-      return null
+      return null;
     }
     return (
       <View style={styles.row}>
         <CommonText text="Thu tiền mặt của khách: " styles={styles.income} />
-        <CommonText
-          text={`${formatCurrency(item?.totalPrice ?? 0)} đ`}
-          styles={styles.valueInCome}
-        />
+        <CommonText text={`${formatCurrency(item?.totalPrice ?? 0)} đ`} styles={styles.valueInCome} />
       </View>
-    )
-  }
+    );
+  };
 
   const renderAction = () => {
     return (
       <View style={styles.mt32}>
-        <CommonButton
-          textStyles={styles.textAccept}
-          text={'Nhận đơn này'?.toUpperCase()}
-          buttonStyles={styles.buttonAccept}
-          onPress={onPressReceiveOrder(true)}
-        />
-        <TouchableOpacity
-          onPress={onPressReceiveOrder(false)}
-          style={styles.btReject}>
+        <CommonButton textStyles={styles.textAccept} text={'Nhận đơn này'?.toUpperCase()} buttonStyles={styles.buttonAccept} onPress={onPressReceiveOrder(true)} />
+        <TouchableOpacity onPress={onPressReceiveOrder(false)} style={styles.btReject}>
           <CommonText text="Từ chối đơn" styles={styles.textCancel} />
         </TouchableOpacity>
       </View>
-    )
-  }
+    );
+  };
 
   return (
-    <ActionSheet
-      ref={actionSheetRef}
-      containerStyle={styles.actionSheet}
-      closeOnTouchBackdrop={false}>
-      <View style={{height: '100%'}}>
+    <ActionSheet ref={actionSheetRef} containerStyle={styles.actionSheet} closeOnTouchBackdrop={false}>
+      <View style={{ height: '100%' }}>
         {/* <View style={{ flex: 1, backgroundColor: 'red'}}> */}
         <View style={styles.ph20}>
           <CommonText text="Đơn hàng mới" styles={styles.newOrder} />
@@ -334,7 +320,7 @@ const NewOrder = ({showModal, onPressReceive, item}: Props) => {
       </View>
       <View style={styles.wrapperAction}>{renderAction()}</View>
     </ActionSheet>
-  )
-}
+  );
+};
 
-export default NewOrder
+export default NewOrder;
