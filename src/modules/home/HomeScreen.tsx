@@ -16,7 +16,7 @@ import { StatusUpdateOrder } from 'services/src/typings';
 import { useGetOnlineStatus, useUpdateActiveStatus, useUpdateStatusOrder } from 'services/src/serveRequest/serveService';
 import { appStore } from 'state/app';
 import { serveRequestStore } from 'state/serveRequest/serveRequestStore';
-import { calculateTimeDifferenceV2, renderTextModalHomeScreen, showMessageError } from 'utils/index';
+import { calculateTimeDifferenceV2, renderTextModalHomeScreen, showMessageError, showMessageSuccess } from 'utils/index';
 import ModalSuccess from './components/ModalSuccess';
 import Sound from 'react-native-sound';
 import BackgroundTimer from 'react-native-background-timer';
@@ -553,7 +553,7 @@ const HomeScreen = ({ route }: Props) => {
         // Check location customer and shoemaker <= 150m
         const { distance } = calculateTimeDifferenceV2(currentLocation.latitude, currentLocation.longitude, +orderInProgress.latitude, +orderInProgress.longitude);
         if (distance > 0.15) {
-          showMessageError('Khoảng cách chưa đúng bạn vui lòng đến đúng vị trí khách');
+          showMessageSuccess('Khoảng cách chưa đúng bạn vui lòng đến đúng vị trí khách');
           return;
         }
 

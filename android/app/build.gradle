@@ -82,8 +82,8 @@ android {
         applicationId "com.taker.fast"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 23
-        versionName "1.1.6"
+        versionCode 25
+        versionName "1.1.8"
     }
     signingConfigs {
         // debug {

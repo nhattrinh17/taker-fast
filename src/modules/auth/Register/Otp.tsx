@@ -132,7 +132,7 @@ const Otp = (props: Props) => {
             text={`Taker đang thực hiện cuộc gọi tới ${phone}. Vui lòng chờ trong giây lát.`}
             styles={styles.label}
           /> */}
-          <CommonText text={`Nhận qua cuộc gọi voie nếu sau 20s ko nhận được hệ thống tự động gửi tin nhắn`} styles={styles.label} />
+          <CommonText text={`Nhận qua cuộc gọi voice nếu sau 20s không nhận được hệ thống tự động gửi tin nhắn`} styles={styles.label} />
 
           <CommonText text="Mã xác thực" styles={styles.desc} />
           <OtpInput

@@ -18,10 +18,15 @@ const styles = StyleSheet.create({
   text2Style: {
     fontSize: Fonts.fontSize[14],
     fontFamily: Fonts.fontFamily.AvertaBold,
-    color: Colors.main,
+  },
+  text2StyleSuccess: {
+    fontSize: Fonts.fontSize[14],
+    fontFamily: Fonts.fontFamily.AvertaBold,
+    color: Colors.white,
   },
   typeSuccess: {
-    borderLeftColor: 'green',
+    borderLeftColor: Colors.main,
+    backgroundColor: Colors.main,
   },
   typeError: {
     borderLeftColor: Colors.red,
@@ -29,7 +34,7 @@ const styles = StyleSheet.create({
 });
 
 const customToast: ToastConfig = {
-  success: props => <BaseToast {...props} style={styles.typeSuccess} text2Style={styles.text2Style} />,
+  success: props => <BaseToast text2NumberOfLines={10} {...props} style={styles.typeSuccess} text2Style={styles.text2StyleSuccess} />,
   error: props => <BaseToast text2NumberOfLines={10} {...props} style={styles.typeError} text2Style={styles.text2Style} />,
 };
 
