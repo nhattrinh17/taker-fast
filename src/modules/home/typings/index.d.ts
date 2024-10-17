@@ -30,7 +30,7 @@ declare namespace home {
     distance: number;
     addressNote?: string;
     time: string;
-    free: number;
+    income: number;
   }
 
   interface Customer {

@@ -268,7 +268,7 @@ const NewOrder = ({ showModal, onPressReceive, item }: Props) => {
         </View>
         <View style={styles.rowItemMenu}>
           <CommonText text="Thu nhập dự kiến" styles={styles.total} />
-          <CommonText text={formatCurrency((item?.totalPrice || 0) - (item?.free || 0)) + ' đ'} styles={styles.totalIncome} />
+          <CommonText text={formatCurrency(item?.income || 0) + ' đ'} styles={styles.totalIncome} />
         </View>
 
         <View style={[styles.rowItemMenu, styles.mt6]}>
