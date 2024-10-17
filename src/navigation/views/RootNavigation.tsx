@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
   text2Style: {
     fontSize: Fonts.fontSize[14],
     fontFamily: Fonts.fontFamily.AvertaBold,
+    color: Colors.main,
   },
   typeSuccess: {
     borderLeftColor: 'green',
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
 
 const customToast: ToastConfig = {
   success: props => <BaseToast {...props} style={styles.typeSuccess} text2Style={styles.text2Style} />,
-  error: props => <BaseToast {...props} style={styles.typeError} text2Style={styles.text2Style} />,
+  error: props => <BaseToast text2NumberOfLines={10} {...props} style={styles.typeError} text2Style={styles.text2Style} />,
 };
 
 const RootNavigation = () => {

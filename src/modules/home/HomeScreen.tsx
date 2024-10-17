@@ -553,7 +553,7 @@ const HomeScreen = ({ route }: Props) => {
         // Check location customer and shoemaker <= 150m
         const { distance } = calculateTimeDifferenceV2(currentLocation.latitude, currentLocation.longitude, +orderInProgress.latitude, +orderInProgress.longitude);
         if (distance > 0.15) {
-          showMessageError('Địa điểm gặp khách quá xa!');
+          showMessageError('Khoảng cách chưa đúng bạn vui lòng đến đúng vị trí khách');
           return;
         }
 
