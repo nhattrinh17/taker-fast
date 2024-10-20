@@ -86,7 +86,14 @@ export const useSetFCMTokenUserPending = () => {
 
 export const useGetIncome = () => {
   const { trigger } = useSWRMutation<Response, any, string, ParamsGetIncome>(Endpoint.Profile.INCOME, (url: string, { arg }: { arg: ParamsGetIncome }) => {
-    return fetcher(`${url}/?period=${arg.period}`, Methods.GET);
+    let urlParams = `${url}/?period=${arg.period}`;
+    if (arg.start) {
+      urlParams += `&start=${arg.start}`;
+    }
+    if (arg.end) {
+      urlParams += `&end=${arg.end}`;
+    }
+    return fetcher(urlParams, Methods.GET);
   });
   return {
     triggerGetIncome: trigger,

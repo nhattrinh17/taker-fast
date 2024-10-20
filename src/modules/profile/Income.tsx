@@ -8,6 +8,8 @@ import { appStore } from 'state/app';
 import { useGetIncome } from 'services/src/profile';
 import { formatCurrency, getDataCurrentWeek } from 'utils/index';
 import { dataTabIncome } from 'utils/constants';
+import { SelectDateRanger } from 'components/SelectDateRanger';
+import CommonButton from 'components/Button';
 
 const styles = StyleSheet.create({
   container: {
@@ -69,19 +71,30 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.main,
   },
   tabText: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.textPrimary,
   },
   tabTextActive: {
-    fontSize: 16,
+    fontSize: 14,
     color: Colors.main,
   },
   weekBox: {
+    paddingTop: 12,
     alignItems: 'center',
   },
   weekBoxText: {
     fontWeight: '500',
     color: Colors.black,
+  },
+  boxSelectDate: {
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  boxSelectDateConfirm: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    width: 100,
   },
 });
 
@@ -96,20 +109,27 @@ const Income = () => {
   const { triggerGetIncome } = useGetIncome();
   const [dataToday, setDataToday] = useState<any>({});
   const [dataMonth, setDataMonth] = useState<any>({});
+  const [dataWeek, setDataWeek] = useState<any>({});
+  const [dataCustom, setDataCustom] = useState<any>({});
   const [activeTab, setActiveTab] = useState<'TODAY' | 'WEEK' | 'MONTH' | string>('TODAY');
   const currentWeek = getDataCurrentWeek();
+  const [startDate, setStartDate] = useState<Date>(new Date(new Date().getTime() - 1000 * 60 * 60 * 24));
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [updateDataCustom, setUpdateDataCustom] = useState(true);
 
   useEffect(() => {
     const fetchIncome = async () => {
       try {
         setLoading(true);
-        const response = await triggerGetIncome({ period: 'today' });
+        const [response, responseMonth, responseWeek] = await Promise.all([triggerGetIncome({ period: 'today' }), triggerGetIncome({ period: 'month' }), triggerGetIncome({ period: 'week' })]);
         if (response?.type === 'success') {
           setDataToday(response.data);
         }
-        const responseMonth = await triggerGetIncome({ period: 'month' });
         if (responseMonth?.type === 'success') {
           setDataMonth(responseMonth.data);
+        }
+        if (responseWeek?.type === 'success') {
+          setDataWeek(responseWeek.data);
         }
       } catch (err) {
         console.error('Error fetching income:', err);
@@ -121,6 +141,27 @@ const Income = () => {
     fetchIncome();
   }, [triggerGetIncome]);
 
+  useEffect(() => {
+    const fetchIncome = async () => {
+      if (updateDataCustom) {
+        try {
+          setLoading(true);
+          const response = await triggerGetIncome({ period: 'custom', start: startDate.toISOString(), end: endDate.toISOString() });
+          if (response?.type === 'success') {
+            setDataCustom(response.data);
+          }
+        } catch (err) {
+          console.error('Error fetching income:', err);
+          setLoading(false);
+        } finally {
+          setLoading(false);
+          setUpdateDataCustom(false);
+        }
+      }
+    };
+    fetchIncome();
+  }, [updateDataCustom]);
+
   const renderContent = () => {
     switch (activeTab) {
       case 'TODAY':
@@ -129,11 +170,27 @@ const Income = () => {
         return (
           <View>
             {renderCurrentWeek()}
-            {renderDetail(dataMonth)}
+            {renderDetail(dataWeek)}
           </View>
         );
       case 'MONTH':
         return renderDetail(dataMonth);
+      case 'CUSTOM':
+        return (
+          <View>
+            <View style={styles.boxSelectDate}>
+              <SelectDateRanger startDate={startDate} endDate={endDate} setEndDate={setEndDate} setStartDate={setStartDate} />
+              <CommonButton
+                buttonStyles={styles.boxSelectDateConfirm}
+                onPress={() => {
+                  setUpdateDataCustom(true);
+                }}
+                text="Xác nhận"
+              />
+            </View>
+            {renderDetail(dataCustom)}
+          </View>
+        );
       default:
         return renderDetail(dataToday);
     }

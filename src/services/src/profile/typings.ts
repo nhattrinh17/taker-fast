@@ -52,6 +52,8 @@ export interface ResponseSetFCMToken {
 
 export interface ParamsGetIncome {
   period: string;
+  start?: string;
+  end?: string;
 }
 
 export interface ParamsGetReferal {
