@@ -1,18 +1,13 @@
-import React, {useEffect, useState} from 'react'
-import {
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
-import Header from 'components/Header'
-import CommonText from 'components/CommonText'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import {appStore} from 'state/app'
-import {useGetIncome} from 'services/src/profile'
-import {formatCurrency} from 'utils/index'
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Header from 'components/Header';
+import CommonText from 'components/CommonText';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { appStore } from 'state/app';
+import { useGetIncome } from 'services/src/profile';
+import { formatCurrency, getDataCurrentWeek } from 'utils/index';
+import { dataTabIncome } from 'utils/constants';
 
 const styles = StyleSheet.create({
   container: {
@@ -81,137 +76,132 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.main,
   },
-})
+  weekBox: {
+    alignItems: 'center',
+  },
+  weekBoxText: {
+    fontWeight: '500',
+    color: Colors.black,
+  },
+});
+
+interface DataIncomeDto {
+  income: number;
+  count: number;
+  total: number;
+}
 
 const Income = () => {
-  const setLoading = appStore(state => state.setLoading)
-  const {triggerGetIncome} = useGetIncome()
-  const [dataToday, setDataToday] = useState<any>({})
-  const [dataMonth, setDataMonth] = useState<any>({})
-  const [activeTab, setActiveTab] = useState<'TODAY' | 'MONTH'>('TODAY')
+  const setLoading = appStore(state => state.setLoading);
+  const { triggerGetIncome } = useGetIncome();
+  const [dataToday, setDataToday] = useState<any>({});
+  const [dataMonth, setDataMonth] = useState<any>({});
+  const [activeTab, setActiveTab] = useState<'TODAY' | 'WEEK' | 'MONTH' | string>('TODAY');
+  const currentWeek = getDataCurrentWeek();
 
   useEffect(() => {
     const fetchIncome = async () => {
       try {
-        setLoading(true)
-        const response = await triggerGetIncome({period: 'today'})
+        setLoading(true);
+        const response = await triggerGetIncome({ period: 'today' });
         if (response?.type === 'success') {
-          setDataToday(response.data)
+          setDataToday(response.data);
         }
-        const responseMonth = await triggerGetIncome({period: 'month'})
+        const responseMonth = await triggerGetIncome({ period: 'month' });
         if (responseMonth?.type === 'success') {
-          setDataMonth(responseMonth.data)
+          setDataMonth(responseMonth.data);
         }
       } catch (err) {
-        console.error('Error fetching income:', err)
-        setLoading(false)
+        console.error('Error fetching income:', err);
+        setLoading(false);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchIncome()
-  }, [triggerGetIncome])
+    };
+    fetchIncome();
+  }, [triggerGetIncome]);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'TODAY':
-        return renderDetail(dataToday)
+        return renderDetail(dataToday);
+      case 'WEEK':
+        return (
+          <View>
+            {renderCurrentWeek()}
+            {renderDetail(dataMonth)}
+          </View>
+        );
       case 'MONTH':
-        return renderDetail(dataMonth)
+        return renderDetail(dataMonth);
       default:
-        return renderDetail(dataToday)
+        return renderDetail(dataToday);
     }
-  }
+  };
 
-  const renderDetail = (data) => (
+  const renderCurrentWeek = () => {
+    return (
+      <View style={styles.weekBox}>
+        <Text style={styles.weekBoxText}>Tuần {currentWeek.weekNumber}</Text>
+        <Text style={styles.weekBoxText}>
+          {currentWeek.start} - {currentWeek.end}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderDetail = (data: DataIncomeDto) => (
     <View>
       <View style={styles.item}>
         <CommonText text="Thu nhập (đ)" styles={styles.label} />
-        <CommonText
-          text={`${formatCurrency(data?.income)}đ`}
-          styles={styles.title}
-        />
+        <CommonText text={`${formatCurrency(data?.income)}đ`} styles={styles.title} />
       </View>
       <View style={styles.line} />
       <View style={styles.item}>
-        <CommonText
-          text="Số đơn hàng thực hiện thành công"
-          styles={styles.label}
-        />
-        <CommonText
-          text={`${formatCurrency(data?.count)}`}
-          styles={styles.title}
-        />
+        <CommonText text="Số đơn hàng thực hiện thành công" styles={styles.label} />
+        <CommonText text={`${formatCurrency(data?.count)}`} styles={styles.title} />
       </View>
       <View style={styles.line} />
       <View style={styles.item}>
         <CommonText text="Chi tiết thu nhập" styles={styles.caption} />
         <View style={styles.row}>
           <CommonText text="Tổng giá đơn hàng" styles={styles.label} />
-          <CommonText
-            text={`${formatCurrency(data?.total)}đ`}
-            styles={styles.value}
-          />
+          <CommonText text={`${formatCurrency(data?.total)}đ`} styles={styles.value} />
         </View>
         <View style={styles.row}>
-          <CommonText
-            text="Phí sử dụng ứng dụng và thuế"
-            styles={styles.label}
-          />
-          <CommonText
-            text={`${formatCurrency(data?.total - data?.income)}đ`}
-            styles={styles.value}
-          />
+          <CommonText text="Phí sử dụng ứng dụng và thuế" styles={styles.label} />
+          <CommonText text={`${formatCurrency(data?.total - data?.income)}đ`} styles={styles.value} />
         </View>
         <View style={styles.row}>
           <CommonText text="Thu nhập" styles={styles.label} />
-          <CommonText
-            text={`${formatCurrency(data?.income)}đ`}
-            styles={styles.value}
-          />
+          <CommonText text={`${formatCurrency(data?.income)}đ`} styles={styles.value} />
         </View>
       </View>
     </View>
-  )
+  );
 
   return (
     <View style={styles.container}>
       <Header title="Thu nhập" />
       <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'TODAY' && styles.activeTab]}
-          onPress={() => setActiveTab('TODAY')}>
-          <Text
-            style={{
-              ...styles.tabText,
-              ...(activeTab === 'TODAY' && {
-                color: Colors.main,
-                fontWeight: 'bold',
-              }),
-            }}>
-            HÔM NAY
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'MONTH' && styles.activeTab]}
-          onPress={() => {
-            setActiveTab('MONTH')
-          }}>
-          <Text
-            style={{
-              ...styles.tabText,
-              ...(activeTab === 'MONTH' && {
-                color: Colors.main,
-                fontWeight: 'bold',
-              }),
-            }}>
-            THÁNG NÀY
-          </Text>
-        </TouchableOpacity>
+        {dataTabIncome.map((tab, index) => (
+          <TouchableOpacity key={index} style={[styles.tab, activeTab === tab.tab && styles.activeTab]} onPress={() => setActiveTab(tab.tab)}>
+            <Text
+              style={{
+                ...styles.tabText,
+                ...(activeTab === tab.tab && {
+                  color: Colors.main,
+                  fontWeight: 'bold',
+                }),
+              }}>
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
       <View style={styles.content}>{renderContent()}</View>
     </View>
-  )
-}
+  );
+};
 
-export default Income
+export default Income;
