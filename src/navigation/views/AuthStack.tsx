@@ -31,6 +31,7 @@ const AuthStack = () => {
           }
         } catch (err) {
           console.error('Error fetching status:', err);
+          setInitial('Phone');
         }
       } else {
         setInitial('Phone');
