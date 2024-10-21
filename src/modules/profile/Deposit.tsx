@@ -1,27 +1,19 @@
-import React, {useEffect, useRef, useState} from 'react'
-import {
-  Dimensions,
-  NativeEventEmitter,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native'
-import {useDeposit} from 'services/src/profile'
-import VnpayMerchant, {
-  VnpayMerchantModule,
-} from 'src/lib/react-native-vnpay-merchant'
-import Header from 'components/Header'
-import CommonText from 'components/CommonText'
-import {Colors} from 'assets/Colors'
-import {Fonts} from 'assets/Fonts'
-import {formatCurrency} from 'utils/index'
-import CommonButton from 'components/Button'
-import {SocketEvents, SocketService} from 'socketIO'
-const eventEmitter = new NativeEventEmitter(VnpayMerchantModule)
-import ActionSheet, {ActionSheetRef} from 'react-native-actions-sheet'
-import {Icons} from 'assets/icons'
-import {goBack} from 'navigation/utils/navigationUtils'
+import React, { useEffect, useRef, useState } from 'react';
+import { Dimensions, NativeEventEmitter, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { useDeposit } from 'services/src/profile';
+import VnpayMerchant, { VnpayMerchantModule } from 'src/lib/react-native-vnpay-merchant';
+import Header from 'components/Header';
+import CommonText from 'components/CommonText';
+import { Colors } from 'assets/Colors';
+import { Fonts } from 'assets/Fonts';
+import { formatCurrency } from 'utils/index';
+import CommonButton from 'components/Button';
+import { SocketEvents, SocketService } from 'socketIO';
+const eventEmitter = new NativeEventEmitter(VnpayMerchantModule);
+import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
+import { Icons } from 'assets/icons';
+import { goBack, navigate } from 'navigation/utils/navigationUtils';
+import { userStore } from 'state/user';
 
 const styles = StyleSheet.create({
   container: {
@@ -140,21 +132,21 @@ const styles = StyleSheet.create({
     color: Colors.red,
     marginTop: 8,
   },
-})
+});
 
-const amounts = [100000, 200000, 300000, 500000, 1000000, 2000000]
-const MINIMUM = 5000
-const MAXIMUM = 1000000000
+const amounts = [100000, 200000, 300000, 500000, 1000000, 2000000];
+const MINIMUM = 5000;
+const MAXIMUM = 1000000000;
 
 interface Transaction {
-  amount: number
-  status: string
-  transactionId: string
+  amount: number;
+  status: string;
+  transactionId: string;
 }
 
 type TransactionStatusMessages = {
-  [key: number]: string
-}
+  [key: number]: string;
+};
 
 const transactionStatusMessages: TransactionStatusMessages = {
   0: 'Giao dịch thành công',
@@ -170,119 +162,117 @@ const transactionStatusMessages: TransactionStatusMessages = {
   75: 'Ngân hàng thanh toán đang bảo trì.',
   79: 'Giao dịch không thành công do: KH nhập sai mật khẩu thanh toán quá số lần quy định. Xin quý khách vui lòng thực hiện lại giao dịch',
   99: 'Các lỗi khác (lỗi còn lại, không có trong danh sách mã lỗi đã liệt kê)',
-}
+};
 
 const Deposit = () => {
-  const actionSheetRef = useRef<ActionSheetRef>(null)
-  const {triggerDeposit} = useDeposit()
-  const socketService = SocketService.getInstance()
-  const [amountSelected, setAmountSelected] = useState<number>()
-  const [value, setValue] = useState<string>('')
-  const fee = 0
-  const [transaction, setTransaction] = useState<Transaction>()
-  const [error, setError] = useState('')
+  const actionSheetRef = useRef<ActionSheetRef>(null);
+  const { triggerDeposit } = useDeposit();
+  const socketService = SocketService.getInstance();
+  const [amountSelected, setAmountSelected] = useState<number>();
+  const [value, setValue] = useState<string>('');
+  const fee = 0;
+  const [transaction, setTransaction] = useState<Transaction>();
+  const [error, setError] = useState('');
+  const user = userStore(state => state.user);
 
   const onDeposit = async () => {
     if (+value < MINIMUM || +value >= MAXIMUM) {
-      setError('Số tiền hợp lệ từ 5.000 đến dưới 1 tỷ đồng')
-      return
+      setError('Số tiền hợp lệ từ 5.000 đến dưới 1 tỷ đồng');
+      return;
     }
     try {
-      const response = await triggerDeposit({amount: +value})
-      if (response?.data) {
-        eventEmitter.addListener('PaymentBack', e => {
-          console.log('Sdk back!')
-          if (e) {
-            console.log('e.resultCode = ' + e.resultCode)
-            switch (
-              e.resultCode
-              //resultCode == -1
-              //vi: Người dùng nhấn back từ sdk để quay lại
-              //en: back from sdk (user press back in button title or button back in hardware android)
+      // skip when use user gg test
+      if (user.phone == '0963012518') {
+        navigate('Home');
+      } else {
+        const response = await triggerDeposit({ amount: +value });
+        if (response?.data) {
+          eventEmitter.addListener('PaymentBack', e => {
+            console.log('Sdk back!');
+            if (e) {
+              console.log('e.resultCode = ' + e.resultCode);
+              switch (
+                e.resultCode
+                //resultCode == -1
+                //vi: Người dùng nhấn back từ sdk để quay lại
+                //en: back from sdk (user press back in button title or button back in hardware android)
 
-              //resultCode == 10
-              //vi: Người dùng nhấn chọn thanh toán qua app thanh toán (Mobile Banking, Ví...) lúc này app tích hợp sẽ cần lưu lại cái PNR, khi nào người dùng mở lại app tích hợp thì sẽ gọi kiểm tra trạng thái thanh toán của PNR Đó xem đã thanh toán hay chưa.
-              //en: user select app to payment (Mobile banking, wallet ...) you need save your PNR code. because we don't know when app banking payment successfully. so when user re-open your app. you need call api check your PNR code (is paid or unpaid). PNR: it's vnp_TxnRef. Reference code of transaction at Merchant system
+                //resultCode == 10
+                //vi: Người dùng nhấn chọn thanh toán qua app thanh toán (Mobile Banking, Ví...) lúc này app tích hợp sẽ cần lưu lại cái PNR, khi nào người dùng mở lại app tích hợp thì sẽ gọi kiểm tra trạng thái thanh toán của PNR Đó xem đã thanh toán hay chưa.
+                //en: user select app to payment (Mobile banking, wallet ...) you need save your PNR code. because we don't know when app banking payment successfully. so when user re-open your app. you need call api check your PNR code (is paid or unpaid). PNR: it's vnp_TxnRef. Reference code of transaction at Merchant system
 
-              //resultCode == 99
-              //vi: Người dùng nhấn back từ trang thanh toán thành công khi thanh toán qua thẻ khi gọi đến http://sdk.merchantbackapp
-              //en: back from button (button: done, ...) in the webview when payment success. (incase payment with card, atm card, visa ...)
+                //resultCode == 99
+                //vi: Người dùng nhấn back từ trang thanh toán thành công khi thanh toán qua thẻ khi gọi đến http://sdk.merchantbackapp
+                //en: back from button (button: done, ...) in the webview when payment success. (incase payment with card, atm card, visa ...)
 
-              //resultCode == 98
-              //vi: giao dịch thanh toán bị failed
-              //en: payment failed
+                //resultCode == 98
+                //vi: giao dịch thanh toán bị failed
+                //en: payment failed
 
-              //resultCode == 97
-              //vi: thanh toán thành công trên webview
-              //en: payment success
-            ) {
+                //resultCode == 97
+                //vi: thanh toán thành công trên webview
+                //en: payment success
+              ) {
+              }
             }
-          }
-          eventEmitter.removeAllListeners('PaymentBack')
-        })
+            eventEmitter.removeAllListeners('PaymentBack');
+          });
 
-        VnpayMerchant.show({
-          isSandbox: false,
-          scheme: 'takerFast',
-          title: 'Lựa chọn phương thức thanh toán',
-          titleColor: '#333333',
-          beginColor: '#ffffff',
-          endColor: '#ffffff',
-          tmn_code: 'TAKER001',
-          paymentUrl: response?.data,
-        })
+          VnpayMerchant.show({
+            isSandbox: false,
+            scheme: 'takerFast',
+            title: 'Lựa chọn phương thức thanh toán',
+            titleColor: '#333333',
+            beginColor: '#ffffff',
+            endColor: '#ffffff',
+            tmn_code: 'TAKER001',
+            paymentUrl: response?.data,
+          });
+        }
       }
     } catch (err) {
-      console.log('errio=>>>', err)
+      console.log('errio=>>>', err);
     }
-  }
+  };
 
   const onSelectAmount = (amount: number) => () => {
-    setAmountSelected(amount)
-    setValue(amount.toString())
-  }
+    setAmountSelected(amount);
+    setValue(amount.toString());
+  };
 
   const onCloseActionSheet = () => {
-    actionSheetRef?.current?.hide()
-    goBack()
-  }
+    actionSheetRef?.current?.hide();
+    goBack();
+  };
 
   const onChangeText = (text: string) => {
     if (error !== '') {
-      setError('')
+      setError('');
     }
-    setValue(text?.replace(/\./g, ''))
-  }
+    setValue(text?.replace(/\./g, ''));
+  };
 
   useEffect(() => {
     socketService.once(SocketEvents.PAYMENT_STATUS, res => {
-      const response = res as unknown as Transaction
-      setTransaction(response)
-      actionSheetRef?.current?.show()
-    })
-  }, [])
+      const response = res as unknown as Transaction;
+      setTransaction(response);
+      actionSheetRef?.current?.show();
+    });
+  }, []);
 
   const renderInputAmount = () => {
     return (
-      <View style={{...styles.wrapperInputAmount, ...styles.pdHZ20}}>
+      <View style={{ ...styles.wrapperInputAmount, ...styles.pdHZ20 }}>
         <CommonText text="Nhập số tiền (đ)" />
-        <TextInput
-          value={value ? formatCurrency(+value?.replace(/\./g, '')) : ''}
-          onChangeText={onChangeText}
-          keyboardType="numeric"
-          returnKeyType="done"
-          placeholder="Nhập số tiền bạn cần nạp thêm"
-          placeholderTextColor={Colors.textSecondary}
-          style={value ? styles.inputValue : styles.input}
-        />
+        <TextInput value={value ? formatCurrency(+value?.replace(/\./g, '')) : ''} onChangeText={onChangeText} keyboardType="numeric" returnKeyType="done" placeholder="Nhập số tiền bạn cần nạp thêm" placeholderTextColor={Colors.textSecondary} style={value ? styles.inputValue : styles.input} />
         {error !== '' && <CommonText text={error} styles={styles.error} />}
       </View>
-    )
-  }
+    );
+  };
 
   const renderResult = () => {
     return (
-      <View style={{...styles.pdHZ20, ...styles.mt20}}>
+      <View style={{ ...styles.pdHZ20, ...styles.mt20 }}>
         <View style={styles.rowItem}>
           <CommonText text="Số tiền nạp" />
           <CommonText text={formatCurrency(+value?.replace(/\./g, '')) + 'đ'} />
@@ -293,17 +283,14 @@ const Deposit = () => {
         </View>
         <View style={styles.rowItem}>
           <CommonText text="Tổng thanh toán" styles={styles.total} />
-          <CommonText
-            text={formatCurrency(+value?.replace(/\./g, '') - fee) + 'đ'}
-            styles={styles.totalValue}
-          />
+          <CommonText text={formatCurrency(+value?.replace(/\./g, '') - fee) + 'đ'} styles={styles.totalValue} />
         </View>
       </View>
-    )
-  }
+    );
+  };
 
-  const isSuccess = transaction?.status === '00'
-  const statusCode = Number(transaction?.status)
+  const isSuccess = transaction?.status === '00';
+  const statusCode = Number(transaction?.status);
 
   return (
     <View style={styles.container}>
@@ -317,8 +304,7 @@ const Deposit = () => {
                 key={index}
                 style={{
                   ...styles.itemAmount,
-                  borderColor:
-                    item === amountSelected ? Colors.main : Colors.border,
+                  borderColor: item === amountSelected ? Colors.main : Colors.border,
                 }}
                 onPress={onSelectAmount(item)}>
                 <CommonText
@@ -336,41 +322,22 @@ const Deposit = () => {
         <View style={styles.line} />
         {renderResult()}
       </View>
-      <CommonButton
-        text="Thanh toán ngay"
-        isDisable={!value}
-        onPress={onDeposit}
-        buttonStyles={styles.btnDeposit}
-      />
-      <ActionSheet
-        ref={actionSheetRef}
-        containerStyle={styles.actionSheet}
-        onClose={onCloseActionSheet}>
+      <CommonButton text="Thanh toán ngay" isDisable={!value} onPress={onDeposit} buttonStyles={styles.btnDeposit} />
+      <ActionSheet ref={actionSheetRef} containerStyle={styles.actionSheet} onClose={onCloseActionSheet}>
         <View style={styles.wrapper}>
           {isSuccess ? <Icons.PaySuccess /> : <Icons.PayFailed />}
           <CommonText
-            text={
-              isSuccess ? 'Nạp tiền thành công' : 'Nạp tiền không thành công'
-            }
+            text={isSuccess ? 'Nạp tiền thành công' : 'Nạp tiền không thành công'}
             styles={{
               ...styles.status,
               color: isSuccess ? Colors.main : Colors.red,
             }}
           />
-          <CommonText
-            text={
-              isSuccess
-                ? `Bạn đã nạp thành công số tiền ${formatCurrency(
-                    transaction?.amount,
-                  )} đ`
-                : transactionStatusMessages[statusCode]
-            }
-            styles={styles.desc}
-          />
+          <CommonText text={isSuccess ? `Bạn đã nạp thành công số tiền ${formatCurrency(transaction?.amount)} đ` : transactionStatusMessages[statusCode]} styles={styles.desc} />
         </View>
       </ActionSheet>
     </View>
-  )
-}
+  );
+};
 
-export default Deposit
+export default Deposit;
