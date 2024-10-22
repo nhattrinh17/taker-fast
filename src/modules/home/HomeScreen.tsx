@@ -172,8 +172,8 @@ const HomeScreen = ({ route }: Props) => {
     latitude: number;
     longitude: number;
   }>({
-    latitude: location?.lat ?? 0,
-    longitude: location?.long ?? 0,
+    latitude: location?.lat || 21.0034179,
+    longitude: location?.long || 105.819944,
   });
   // console.log('🚀 ~ HomeScreen ~ currentLocation:', currentLocation);
 
