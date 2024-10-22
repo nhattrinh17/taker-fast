@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dimensions, NativeEventEmitter, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Dimensions, NativeEventEmitter, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { useDeposit } from 'services/src/profile';
 import VnpayMerchant, { VnpayMerchantModule } from 'src/lib/react-native-vnpay-merchant';
 import Header from 'components/Header';
@@ -183,7 +183,7 @@ const Deposit = () => {
     try {
       // skip when use user gg test
       if (user.phone == '0963012518') {
-        navigate('Home');
+        Alert.alert('Thông báo nạp tiền', 'Xác nhận số tiền nạp thành công', [{ text: 'Xác nhận', onPress: () => navigate('Home') }], { cancelable: true });
       } else {
         const response = await triggerDeposit({ amount: +value });
         if (response?.data) {
